@@ -1,5 +1,19 @@
 # roccat-vulcan-api-rs
-Roccat Vulcan keyboard illumination API
+**Roccat Vulcan keyboard illumination API.**  
+A fast multiplatform API to control Roccat Vulcan illumination.
+
+## Usage
+add on your dependencies of Cargo.toml
+`roccat_vulcan_api_rs = { version = "0.1.0", git = "https://github.com/ChickenStorm/roccat-vulcan-api-rs" }`
+# Examples
+To load and initialised a keyboard use
+```rust
+use roccat_vulcan_api_rs::{KeyboardApi, config, ControlerFeatureKind};
+
+let mut keyboard = KeyboardApi::get_api.unwrap();
+let result = keyboard.initialise_control_device(&ControlerFeatureKind::Rainbow);
+```
+
 
 
 ### Acknowledgement

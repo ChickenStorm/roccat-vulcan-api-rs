@@ -1,11 +1,19 @@
 
 pub mod constants {
+    //! Contains the differents constants.
+    
+    /// Product is of the Vulcan 100.
     pub const VULCAN_100_PRODUCT_ID: u16 = 12410;
+    /// Product is of the Vulcan 120.
     pub const VULCAN_120_PRODUCT_ID: u16 = 12440;
-    // the reason the usage page is 10 is unkown and may change device it device
+    /// Defaut usage page for the read device.
+    /// The reason the usage page is 10 is unkown and may change device it device.
     pub const USAGE_PAGE_READ_DEVICE: u16 = 10;
+    /// Defaut interface number of the read device.
     pub const READ_INTERFACE_NUMBER: i32 = 1;
+    /// Defaut interface number of the control device.
     pub const CONTROL_INTERFACE_NUMBER: i32 = 1;
+    /// Defaut interface number of the led device.
     pub const LED_INTERFACE_NUMBER: i32 = 3;
     
     pub const FEATURE_REPORT_1: [u8; 3] = [0x15, 0x00, 0x01];
@@ -123,6 +131,7 @@ pub mod constants {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0xcf,
     ];
     pub const FEATURE_REPORT_9: [u8; 8] = [0x13, 0x08, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00];
+    /// List of feature report for the control device on the default rainbow mode.
     pub const FEATURE_REPORT: [&[u8] ; 9] = [
         &FEATURE_REPORT_1,
         &FEATURE_REPORT_2,
@@ -134,6 +143,7 @@ pub mod constants {
         &FEATURE_REPORT_8,
         &FEATURE_REPORT_9,
     ];
+    /// List of feature report for the control device on the alternative mode.
     pub const FEATURE_REPORT_ALT: [&[u8] ; 9] = [
         &FEATURE_REPORT_1,
         &FEATURE_REPORT_2,
@@ -147,6 +157,7 @@ pub mod constants {
     ];
 }
 
+/// Basic HID interface filter.
 #[derive(Clone)]
 pub struct HidInterfaceInfo {
     product_id : u16,
@@ -171,6 +182,7 @@ impl HidInterfaceInfo {
     
 }
 
+/// HID interface filter with usage page.
 #[derive(Clone)]
 pub struct HidInterfaceUserPageInfo {
     product_id : u16,
@@ -178,6 +190,7 @@ pub struct HidInterfaceUserPageInfo {
     usage_page : u16,
 }
 
+/// HID interface filter.
 #[derive(Clone)]
 pub enum HidInterfaceFilter {
     Basic(HidInterfaceInfo),
@@ -214,6 +227,8 @@ pub struct KeyboardIntrefacesInfo {
 }
 
 impl KeyboardIntrefacesInfo {
+    
+    /// Default vulcan 100 info.
     pub fn get_vulcan_100() -> Self {
         let product_id = constants::VULCAN_100_PRODUCT_ID;
         Self {
@@ -233,6 +248,7 @@ impl KeyboardIntrefacesInfo {
         }
     }
     
+    /// Default vulcan 120 info.
     pub fn get_vulcan_120() -> Self {
         let product_id = constants::VULCAN_120_PRODUCT_ID;
         Self {
