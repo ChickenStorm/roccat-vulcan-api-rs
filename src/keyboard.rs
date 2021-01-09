@@ -1,5 +1,6 @@
 use super::config;
 use super::config::constants;
+use super::layout;
 use std::{
     thread::sleep,
     time::{Duration, Instant},
@@ -62,7 +63,7 @@ fn is_correct_control_device(device: &hidapi::HidDevice) -> bool {
     let a = device.get_feature_report(&mut buffer);
     match a{
         Ok(val) => val > 0,
-        Err(err) => {
+        Err(_) => {
             false
         },
     }
@@ -88,7 +89,7 @@ pub enum ControlerFeatureKind {
 ///  sleep duration for KeyboardApi::wait_for_control_device.
 const WAIT_FOR_CONTROL_DURATION: Duration = Duration::from_millis(1); // if I enter 0 it does not work
 /// max time wating for device in KeyboardApi::wait_for_control_device.
-const MAX_WAIT_DURATION: Duration = Duration::from_millis(50);
+const MAX_WAIT_DURATION: Duration = Duration::from_millis(200);
 
 impl KeyboardApi {
     
@@ -122,7 +123,8 @@ impl KeyboardApi {
             .ok_or(ErrorRoccatVulcanApi::NoControlDevice)?
             .or(Err(ErrorRoccatVulcanApi::NoControlDevice))?;
         let read = read_hid_info.open_device(hidapi).map_err(|error| ErrorRoccatVulcanApi::ReadDeviceError(error))?;
-        let led = read_hid_info.open_device(hidapi).map_err(|error| ErrorRoccatVulcanApi::LedDeviceError(error))?;
+        let led = led_device.open_device(hidapi).map_err(|error| ErrorRoccatVulcanApi::LedDeviceError(error))?;
+        read.set_blocking_mode(true).map_err(|error| ErrorRoccatVulcanApi::ReadDeviceError(error))?;
         Ok(Self {
             read,
             control,
@@ -138,7 +140,7 @@ impl KeyboardApi {
     
     pub fn get_api_from_list(interface_infos : &[config::KeyboardIntrefacesInfo]) -> Result<Self, ErrorRoccatVulcanApi>{
         let hidapi = hidapi::HidApi::new().map_err(|error| ErrorRoccatVulcanApi::HidApiError(error))?;
-        return KeyboardApi::get_api_from_interface_hidapi(&hidapi, &config::get_default_interface_info());
+        return KeyboardApi::get_api_from_interface_hidapi(&hidapi, interface_infos);
     }
     
     /// Default way to get KeyboardApi. If you want to use hidapi::HidApi you should use KeyboardApi::get_api_from_hidapi
@@ -161,9 +163,9 @@ impl KeyboardApi {
             return Ok(false);
         }
         let feature_reports = {
-            match kind{
-                Rainbow => &constants::FEATURE_REPORT,
-                Alternative => &constants::FEATURE_REPORT_ALT,
+            match kind {
+                ControlerFeatureKind::Rainbow => &constants::FEATURE_REPORT,
+                ControlerFeatureKind::Alternative => &constants::FEATURE_REPORT_ALT,
             }
         };
         for feature_report in feature_reports.iter() {
@@ -188,7 +190,7 @@ impl KeyboardApi {
             let size = self.control.get_feature_report(&mut buffer);
             match size {
                 Ok(val) => control_device_ready = val > 0,
-                Err(err) => (),
+                Err(_) => (),
             };
             if now.elapsed() > MAX_WAIT_DURATION {
                 return Err(ErrorRoccatVulcanApi::ToMuchTimeWaited(now.elapsed()));
@@ -196,4 +198,20 @@ impl KeyboardApi {
         }
         return Ok(());
     }
+    
+    pub fn wait_for_key_press(&self) -> Result<layout::Keypress, ErrorRoccatVulcanApi> {
+        listen_key_press(&self.read).map_err(|err| ErrorRoccatVulcanApi::ReadDeviceError(err))
+    }
+}
+
+
+fn listen_key_press_raw(device: &hidapi::HidDevice) -> Result<[u8; 5], hidapi::HidError> {
+    let mut buffer: [u8; 5]= [0; 5];
+    device.read(&mut buffer)?;
+    return Ok(buffer);
+}
+
+fn listen_key_press(device: &hidapi::HidDevice) -> Result<layout::Keypress, hidapi::HidError> {
+    let buffer = listen_key_press_raw(device)?;
+    return Ok(layout::Keypress::new_from_buffer(&buffer));
 }

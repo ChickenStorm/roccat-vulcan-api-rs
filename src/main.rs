@@ -2,6 +2,8 @@ extern crate hidapi;
 use roccat_vulcan_api_rs::keyboard;
 use roccat_vulcan_api_rs::config;
 use roccat_vulcan_api_rs::keyboard::KeyboardApi;
+use roccat_vulcan_api_rs::layout;
+
 
 use std::time::{Duration, Instant};
 
@@ -23,11 +25,24 @@ fn main() {
         }
     }
     let mut keyboard = KeyboardApi::get_api_from_hidapi(&api).unwrap();
-    //let result = keyboard.initialise_control_device(&keyboard::ControlerFeatureKind::Rainbow);
-    let result = keyboard.initialise_control_device(&keyboard::ControlerFeatureKind::Alternative);
+    let result = keyboard.initialise_control_device(&keyboard::ControlerFeatureKind::Rainbow);
+    //let result = keyboard.initialise_control_device(&keyboard::ControlerFeatureKind::Alternative);
+    
     match result{
         Ok(_) => println!("ok"),
         Err(err) => println!("{:?}", err),
+    };
+    /*
+    let key_list = key::get_layout_info_ch();
+    loop {
+        let result = keyboard.wait_for_key_press();
+        if let Ok(val) = result {
+            let a: std::vec::Vec< &key::KeyInfo> = key_list.iter()
+                .filter(|element| {element.key_code_press == *val.key_code()}).collect();
+            println!("{:?}", a);
+        }
     }
+    */
+    
     //test_time(&api);
 }

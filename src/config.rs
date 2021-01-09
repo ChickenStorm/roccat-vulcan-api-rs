@@ -155,6 +155,8 @@ pub mod constants {
         &FEATURE_REPORT_8_ALT,
         &FEATURE_REPORT_9,
     ];
+    
+    pub const LED_FEATURE_REPORT_HEAD: [u8; 4] = [0xa1, 0x01, 0x01, 0xb4];
 }
 
 /// Basic HID interface filter.

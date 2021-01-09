@@ -16,6 +16,7 @@
 
 pub mod keyboard;
 pub mod config;
+pub mod layout;
 
 pub use config::constants;
 pub use keyboard::{
@@ -24,7 +25,7 @@ pub use keyboard::{
     ErrorRoccatVulcanApi
 };
 pub use config::*;
-
+pub use layout::layout_fr_ch::LayoutFrCh;
 
 pub mod color{
     
