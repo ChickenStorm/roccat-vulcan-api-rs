@@ -1,4 +1,6 @@
 
+//! Defines the layout for Swiss French layout
+
 use super::{
     KeyCodePress,
     Key,
@@ -10,9 +12,11 @@ use super::{
 /// get Layout key associative
 fn get_layout_info_fr_ch() -> [KeyInfo; 107] {
     // I can not move that in a constant because of the .to_string
+    // Latter I might change the key info to have a &'static str
     [
         KeyInfo::new_from_key(3, KeyCodePress::new(10, 57), Key::CapsLock),
-        KeyInfo::new_from_key(250, KeyCodePress::new(204, 1), Key::WheelUp),
+        // note that the index for the key light i out of bound for the wheel up and down
+        KeyInfo::new_from_key(250, KeyCodePress::new(204, 1), Key::WheelUp), 
         KeyInfo::new_from_key(251, KeyCodePress::new(204, 255), Key::WheelDown),
         KeyInfo::new_from_key(0, KeyCodePress::new(251, 17), Key::Escape),
         KeyInfo::new(1, KeyCodePress::new(251, 18), "§".to_string(), Key::Section),
@@ -140,22 +144,23 @@ fn get_layout_info_fr_ch() -> [KeyInfo; 107] {
     ]
 }
 
-// Swiss French Layout
+/// Swiss French Layout
 pub struct LayoutFrCh {
     layout_key_info : [KeyInfo; 107]
 }
 
 impl LayoutFrCh {
+    
     pub fn new() -> Self {
         Self {
             layout_key_info : get_layout_info_fr_ch()
         }
     }
     
+    /// get the array of [`KeyInfo`] 
     pub fn layout_key_info (&self) -> &[KeyInfo; 107] {
         return &self.layout_key_info;
     }
-    
 }
 
 impl Layout for LayoutFrCh {

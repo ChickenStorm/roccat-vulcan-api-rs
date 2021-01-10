@@ -1,4 +1,6 @@
 
+//! Defines the layout of the keyboard and differents key infos
+
 use std::{
     fmt,
     convert::{From, Into},
@@ -8,7 +10,7 @@ use std::{
 
 pub mod layout_fr_ch;
 
-/// Key press event
+/// Key press event.
 #[derive(Clone, Debug)]
 pub struct Keypress {
     key_code: KeyCodePress,
@@ -20,7 +22,12 @@ impl Keypress {
     pub fn new_from_buffer(buffer: &[u8; 5]) -> Self {
         Self {
             key_code: KeyCodePress::new(buffer[2], buffer[3]),
-            is_pressed: buffer[4] == 0,
+            is_pressed: {
+                    match buffer[2] {
+                        10 => buffer[4] == 0, // for some reason the caps loc signal is inverted
+                        _ => buffer[4] != 0,
+                }
+            },
         }
     }
     
@@ -46,7 +53,7 @@ impl Into<KeyCodePress> for Keypress {
     }
 }
 
-/// structur of data to incode the key when a key press is read form hid device
+/// structur of data to incode the key when a key press is read form hid device.
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 pub struct KeyCodePress {
     first_u8: u8,
@@ -89,7 +96,7 @@ impl Into<[u8; 2]> for KeyCodePress {
     }
 }
 
-/// Liste of keys
+/// Liste of keys. Some key might be missing.
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 pub enum Key {
     /// key not listed or other key
@@ -127,9 +134,9 @@ impl fmt::Display for Key {
     }
 }
 
-type KeyCodeLight = u8;
+type KeyCodeLight = u8; // might change to usize
 
-///  associative data for a key
+///  associative data for a key.
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 pub struct KeyInfo {
     key_code_light: KeyCodeLight,
@@ -148,6 +155,7 @@ impl KeyInfo {
         }
     }
     
+    /// create a key info using the `key.to_string()` for [`Key`]
     pub fn new_from_key(key_code_light: KeyCodeLight, key_code_press: KeyCodePress, key: Key) -> Self {
         Self{
             key_code_light,
@@ -181,6 +189,7 @@ impl From<(KeyCodeLight, KeyCodePress, String, Key)> for KeyInfo {
     }
 }
 
+/// Information to encode a layout, get key info from differents way to encode a key.
 pub trait Layout {
     fn find_key_info_from_light (&self, key_code_light : &KeyCodeLight) -> Option<&KeyInfo>;
     fn find_key_info_from_press_code (&self, key_code_press : &KeyCodePress) -> Option<&KeyInfo>;

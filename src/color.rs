@@ -1,17 +1,32 @@
 
+//! Module to manage the color buffer for the led device
+//!
+//! # Examples
+//! ```
+//! use roccat_vulcan_api_rs::{ColorBuffer, ColorRgb};
+//! 
+//! let color_buffer = ColorBuffer::new(ColorRgb::new(255, 255, 255));
+//! ``` 
+
 use std::{
     convert::{From},
     cmp::{PartialOrd, PartialEq, Ord, Eq},
     default::Default
 };
-use super::constants;
+use super::{constants};
 
+/// Trait that define a Color with trhat can yield a (R,G,B) representation
 pub trait Color {
     fn r(&self) -> u8;
     fn g(&self) -> u8;
     fn b(&self) -> u8;
+    
+    fn rgb(&self) ->[u8; 3] {
+        return [self.r(), self.g(), self.b()];
+    }
 }
 
+/// RGB color representation
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Copy)]
 pub struct ColorRgb {
     r : u8,
@@ -25,6 +40,7 @@ impl ColorRgb {
         Self {r, g, b}
     }
     
+    /// create [`ColorRgb`] form `[R, G, B]`
     pub fn new_from_array(array: [u8; 3]) -> Self {
         Self {
             r: array[0],
@@ -75,24 +91,28 @@ impl<T: Color> From<T> for ColorRgb {
 }
 */
 
-impl From<ColorLuminosity> for ColorRgb {
-    fn from(c: ColorLuminosity) -> Self {
-        ColorRgb::new(c.r(), c.g(), c.b())
-    }
-}
-
+/// Color with alpha parameter
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
-pub struct ColorLuminosity {
-    r : u8,
-    g : u8,
-    b : u8,
-    luminosity: Luminosity
+pub struct ColorRgba {
+    r: u8,
+    g: u8,
+    b: u8,
+    a: u8,
 }
 
-impl ColorLuminosity {
+impl ColorRgba {
     
-    pub fn new(r : u8, g: u8, b: u8, luminosity: Luminosity) -> Self {
-        Self {r, g, b, luminosity}
+    pub fn new_from_float(r : u8, g: u8, b: u8, f: f32) -> Self {
+        Self {
+            r,
+            g,
+            b,
+            a: (f.max(0f32).min(1f32) * 255f32 ).floor() as u8,
+        }
+    }
+    
+    pub fn new(r : u8, g: u8, b: u8, a: u8) -> Self {
+        Self {r, g, b, a}
     }
     
     pub fn r_raw(&self) -> u8 {
@@ -107,85 +127,73 @@ impl ColorLuminosity {
         return self.b;
     }
     
-    pub fn luminosity(&self) -> Luminosity {
-        return self.luminosity;
+    pub fn a(&self) -> u8 {
+        return self.a;
     }
 }
 
-impl Color for ColorLuminosity {
+impl Color for ColorRgba {
     fn r(&self) -> u8 {
-        ((self.r as u16 * self.luminosity.l() as u16) / 255u16) as u8
+        ((self.r as u16 * self.a as u16) / 255u16) as u8
     }
     
     fn g(&self) -> u8 {
-        ((self.g as u16 * self.luminosity.l() as u16) / 255u16) as u8
+        ((self.g as u16 * self.a as u16) / 255u16) as u8
     }
     
     fn b(&self) -> u8 {
-        ((self.b as u16 * self.luminosity.l() as u16) / 255u16) as u8
+        ((self.b as u16 * self.a as u16) / 255u16) as u8
     }
 }
 
-#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Copy)]
-pub struct Luminosity {
-    l: u8,
-}
-
-impl Luminosity {
-    pub fn new(l : u8) -> Self {
-        Self {l}
-    }
-    
-    pub fn l(&self) -> u8 {
-        self.l
-    }
-}
-
-impl From<u8> for Luminosity {
-    fn from(l: u8) -> Self {
-        Luminosity::new(l)
-    }
-}
-
-impl From<f32> for Luminosity {
-    fn from(f: f32) -> Self {
-        return Luminosity::from((f.max(0f32).min(1f32) * 255f32 ).floor());
-    }
-}
-
-impl From<ColorRgb> for ColorLuminosity {
+impl From<ColorRgb> for ColorRgba {
     fn from(c: ColorRgb) -> Self { 
-        ColorLuminosity::new(c.r, c.g, c.b, Luminosity::from(255u8))
+        ColorLuminosity::new(c.r, c.g, c.b, 255u8)
     }
 }
 
+impl From<ColorRgba> for ColorRgb {
+    fn from(c: ColorRgba) -> Self {
+        ColorRgb::new(c.r(), c.g(), c.b())
+    }
+}
+
+/// Color with luminosity
+pub type ColorLuminosity = ColorRgba;
+
+/// Encode the set of color for [`super::KeyboardApi::render`].
 pub struct ColorBuffer<T>
     where T: Color + Copy
 {
     buffer: [T; constants::NUMBER_KEY_LED_BUFFER]
 }
 
-
+// raw buffer site based on buffer header and number of key
 const BUFFER_SIZE_RAW: usize = constants::LED_FEATURE_REPORT_HEAD.len() + constants::NUMBER_KEY_LED_BUFFER * 3;
-const BUFFER_SIZE_PACKETED: usize = (((get_packeted_index_from_raw(BUFFER_SIZE_RAW - 1, constants::BITE_PACKET_SIZE) + 1) /(constants::BITE_PACKET_SIZE + 1)) + 1) * (constants::BITE_PACKET_SIZE + 1);
+// Total size of teh buffer separated in packer of [0x00, 64 bits]
+const BUFFER_SIZE_PACKETED: usize = (((get_packeted_index_from_raw(BUFFER_SIZE_RAW - 1, constants::BITE_PACKET_SIZE) + 1) / (constants::BITE_PACKET_SIZE + 1)) + 1) * (constants::BITE_PACKET_SIZE + 1);
 
 impl<T> ColorBuffer<T> 
     where T: Color + Copy
 {
+    /// Create the buffer with the same color for each key
     pub fn new(color : T) -> Self {
         Self {
             buffer : [color; constants::NUMBER_KEY_LED_BUFFER]
         }
     }
     
-    pub fn buffer (&self) -> &[T; constants::NUMBER_KEY_LED_BUFFER] {
+    /// get the buffer
+    pub fn buffer(&self) -> &[T; constants::NUMBER_KEY_LED_BUFFER] {
         &self.buffer
     }
     
-    pub fn buffer_mut (&mut self) -> &mut[T; constants::NUMBER_KEY_LED_BUFFER]{
+    /// get a mutable ref to the buffer
+    pub fn buffer_mut(&mut self) -> &mut[T; constants::NUMBER_KEY_LED_BUFFER] {
         &mut self.buffer
     }
-
+    
+    ///get an array of u8 that is ready to be send to the led device
     pub fn get_led_buffer(&self) -> [u8; BUFFER_SIZE_PACKETED] {
         const LENGTH_HEAD: usize = constants::LED_FEATURE_REPORT_HEAD.len();
         let mut buffer_return = [0x00; BUFFER_SIZE_PACKETED];
@@ -211,18 +219,20 @@ impl<T> ColorBuffer<T>
     }
 }
 
-impl<T> Default for ColorBuffer<T> 
-    where T: Color + Copy + Default
-{
-    fn default() -> Self{
-        Self::new(T::default())
-    }
-}
-
+/// get the index in the array packetet form the raw array
 const fn get_packeted_index_from_raw(index: usize, packet_size: usize) -> usize {
     return (index + 1) + (index) / packet_size;
 }
 
+impl<T> Default for ColorBuffer<T> 
+    where T: Color + Copy + Default
+{
+    fn default() -> Self {
+        Self::new(T::default())
+    }
+}
+
+/// test [`get_packeted_index_from_raw`]
 #[cfg(test)]
 #[test]
 fn test_packet_index(){
@@ -237,8 +247,10 @@ fn test_packet_index(){
     assert_eq!(get_packeted_index_from_raw(0, 32), 1);
     assert_eq!(get_packeted_index_from_raw(4, 2), 7);
 }
+
+/// test that the size of the array reterned by [`ColorBuffer::get_led_buffer`] is of correct size
 #[cfg(test)]
 #[test]
 fn test_buffer_size(){
-    assert_eq!(BUFFER_SIZE_PACKETED % 65, 0)
+    assert_eq!(BUFFER_SIZE_PACKETED % (constants::BITE_PACKET_SIZE + 1), 0)
 }

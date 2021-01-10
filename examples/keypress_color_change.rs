@@ -1,34 +1,21 @@
-extern crate hidapi;
+extern crate roccat_vulcan_api_rs;
 
-use roccat_vulcan_api_rs::keyboard::KeyboardApi;
+use roccat_vulcan_api_rs::KeyboardApi;
 use roccat_vulcan_api_rs::layout::{
     Key,
     Layout,
     layout_fr_ch::LayoutFrCh
 };
-use roccat_vulcan_api_rs::color::ColorBuffer;
-use roccat_vulcan_api_rs::color::ColorRgb;
-use std::{
-    thread::sleep,
-    time::{Duration, Instant},
-};
+use roccat_vulcan_api_rs::ColorBuffer;
+use roccat_vulcan_api_rs::ColorRgb;
 
-fn main() {
-    
-    let api = hidapi::HidApi::new().unwrap();
-    for device in api.device_list() {
-        let product_id_list = roccat_vulcan_api_rs::config::get_products_id_default();
-        if product_id_list.contains(&(device.product_id())){
-            println!{"vendor : {}, usage page : {}, usage : {}, intreface : {}", device.vendor_id(), device.usage_page(), device.usage(), device.interface_number()}
-        }
-    }
-    
-    
-    let keyboard = KeyboardApi::get_api_from_hidapi(&api).unwrap();
-    
+/// color the keybaord with cyan and change to color of the key pressed to blue
+fn main(){
+    let keyboard = KeyboardApi::get_api().unwrap();
     let mut buffer = ColorBuffer::<ColorRgb>::new(ColorRgb::new(0,255,255));
     let layout = LayoutFrCh::new();
-    loop {
+    
+    loop{
         keyboard.render(&buffer).unwrap();
         let result = keyboard.wait_for_key_press();
         if let Ok(val) = result {
