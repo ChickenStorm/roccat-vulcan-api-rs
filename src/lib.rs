@@ -10,13 +10,9 @@
 //! ```
 //! use roccat_vulcan_api_rs::{KeyboardApi, config, ControlerFeatureKind};
 //! 
-//! let mut keyboard = KeyboardApi::get_api.unwrap();
+//! let mut keyboard = KeyboardApi::get_api().unwrap();
 //! let result = keyboard.initialise_control_device(&ControlerFeatureKind::Rainbow);
 //! ```
-
-pub mod keyboard;
-pub mod config;
-pub mod layout;
 
 pub use config::constants;
 pub use keyboard::{
@@ -27,9 +23,10 @@ pub use keyboard::{
 pub use config::*;
 pub use layout::layout_fr_ch::LayoutFrCh;
 
-pub mod color{
-    
-}
+pub mod keyboard;
+pub mod config;
+pub mod layout;
+pub mod color;
 
 #[cfg(test)]
 mod test;

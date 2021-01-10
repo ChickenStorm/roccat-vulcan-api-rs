@@ -1,6 +1,13 @@
-use super::config;
-use super::config::constants;
-use super::layout;
+
+use super::{
+    layout,
+    color::{
+        Color,
+        ColorBuffer,
+    },
+    config::constants,
+    config
+};
 use std::{
     thread::sleep,
     time::{Duration, Instant},
@@ -75,7 +82,7 @@ pub struct KeyboardApi {
     read: hidapi::HidDevice,
     control: hidapi::HidDevice,
     led: hidapi::HidDevice,
-    has_initialised : bool,
+    //has_initialised : bool,
 }
 
 pub enum ControlerFeatureKind {
@@ -125,12 +132,13 @@ impl KeyboardApi {
         let read = read_hid_info.open_device(hidapi).map_err(|error| ErrorRoccatVulcanApi::ReadDeviceError(error))?;
         let led = led_device.open_device(hidapi).map_err(|error| ErrorRoccatVulcanApi::LedDeviceError(error))?;
         read.set_blocking_mode(true).map_err(|error| ErrorRoccatVulcanApi::ReadDeviceError(error))?;
-        Ok(Self {
+        let keyboard= Self {
             read,
             control,
             led,
-            has_initialised: false,
-        })
+        };
+        keyboard.initialise_control_device(&ControlerFeatureKind::Alternative)?;
+        return Ok(keyboard);
     }
     
     /// get KeyboardApi using a hidapi::HidApi
@@ -150,18 +158,17 @@ impl KeyboardApi {
         return KeyboardApi::get_api_from_hidapi(&hidapi);
     }
     
-    /// Return if the control device of the keyboard has been initialised
+    /*
+    // Return if the control device of the keyboard has been initialised
     pub fn has_initialised(&self) -> bool{
         return self.has_initialised;
     }
+    */
     
     /// Initialise the control device for the default color behaviour.
     /// The return Ok(false) if the device has already been initialised
     /// and Ok(true) if the device has been correctly initialised.
-    pub fn initialise_control_device(&mut self, kind: &ControlerFeatureKind) -> Result<bool, ErrorRoccatVulcanApi> {
-        if self.has_initialised() {
-            return Ok(false);
-        }
+    fn initialise_control_device(&self, kind: &ControlerFeatureKind) -> Result<(), ErrorRoccatVulcanApi> {
         let feature_reports = {
             match kind {
                 ControlerFeatureKind::Rainbow => &constants::FEATURE_REPORT,
@@ -173,8 +180,7 @@ impl KeyboardApi {
                 .map_err(|error| ErrorRoccatVulcanApi::ControlDeviceError(error))?;
             self.wait_for_control_device()?;
         }
-        self.has_initialised = true;
-        return Ok(true);
+        return Ok(());
     }
     
     /// Wait for the control device to be ready.
@@ -202,8 +208,23 @@ impl KeyboardApi {
     pub fn wait_for_key_press(&self) -> Result<layout::Keypress, ErrorRoccatVulcanApi> {
         listen_key_press(&self.read).map_err(|err| ErrorRoccatVulcanApi::ReadDeviceError(err))
     }
+    
+    pub fn render(&self, buffer: &ColorBuffer<impl Color + Copy + Default>) -> Result<(), ErrorRoccatVulcanApi>{
+        let buffer_bite = buffer.get_led_buffer();
+        let bite_to_write = (constants::BITE_PACKET_SIZE + 1);
+        for i in 0..(buffer_bite.len() / bite_to_write){
+            let buffer_write = &buffer_bite[(i * ( bite_to_write)).. (i + 1) * bite_to_write];
+            self.led.write(buffer_write).map_err(|error| ErrorRoccatVulcanApi::LedDeviceError(error))?;
+        }
+        Ok(())
+    }
 }
 
+impl Drop for KeyboardApi {
+    fn drop(&mut self) {
+        self.initialise_control_device(&ControlerFeatureKind::Rainbow);
+    }
+}
 
 fn listen_key_press_raw(device: &hidapi::HidDevice) -> Result<[u8; 5], hidapi::HidError> {
     let mut buffer: [u8; 5]= [0; 5];

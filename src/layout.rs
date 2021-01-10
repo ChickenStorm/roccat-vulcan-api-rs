@@ -129,6 +129,7 @@ impl fmt::Display for Key {
 
 type KeyCodeLight = u8;
 
+///  associative data for a key
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
 pub struct KeyInfo {
     key_code_light: KeyCodeLight,
@@ -181,8 +182,8 @@ impl From<(KeyCodeLight, KeyCodePress, String, Key)> for KeyInfo {
 }
 
 pub trait Layout {
-    fn find_key_info_form_light (&self, key_code_light : &KeyCodeLight) -> Option<&KeyInfo>;
-    fn find_key_info_form_press_code (&self, key_code_press : &KeyCodePress) -> Option<&KeyInfo>;
-    fn find_key_info_form_key (&self, key : &Key) -> Option<&KeyInfo>;
-    fn find_key_info_form_string (&self, string : &String) -> Option<&KeyInfo>;
+    fn find_key_info_from_light (&self, key_code_light : &KeyCodeLight) -> Option<&KeyInfo>;
+    fn find_key_info_from_press_code (&self, key_code_press : &KeyCodePress) -> Option<&KeyInfo>;
+    fn find_key_info_from_key (&self, key : &Key) -> Option<&KeyInfo>;
+    fn find_key_info_from_string (&self, string : &String) -> Option<&KeyInfo>;
 }

@@ -26,7 +26,7 @@ fn get_layout_info_fr_ch() -> [KeyInfo; 107] {
         KeyInfo::new_from_key(10, KeyCodePress::new(251, 31), Key::Super),
 
         KeyInfo::new_from_key(11, KeyCodePress::new(251, 16), Key::F1),
-        KeyInfo::new(12, KeyCodePress::new(251, 25), "2".to_string(), Key::Key1),
+        KeyInfo::new(12, KeyCodePress::new(251, 25), "2".to_string(), Key::Key2),
         KeyInfo::new_from_key(13, KeyCodePress::new(251, 27), Key::W),
         KeyInfo::new_from_key(14, KeyCodePress::new(251, 37), Key::S),
         KeyInfo::new_from_key(15, KeyCodePress::new(251, 38), Key::Y),
@@ -159,25 +159,25 @@ impl LayoutFrCh {
 }
 
 impl Layout for LayoutFrCh {
-    fn find_key_info_form_light(&self, key_code_light : &KeyCodeLight) -> Option<&KeyInfo> {
+    fn find_key_info_from_light(&self, key_code_light : &KeyCodeLight) -> Option<&KeyInfo> {
         return self.layout_key_info.iter()
             .filter(move |element| *key_code_light == *element.key_code_light())
             .next();
     }
     
-    fn find_key_info_form_press_code(&self, key_code_press : &KeyCodePress) -> Option<&KeyInfo> {
+    fn find_key_info_from_press_code(&self, key_code_press : &KeyCodePress) -> Option<&KeyInfo> {
         return self.layout_key_info.iter()
             .filter(move |element| *key_code_press == *element.key_code_press())
             .next();
     }
     
-    fn find_key_info_form_key(&self, key : &Key) -> Option<&KeyInfo> {
+    fn find_key_info_from_key(&self, key : &Key) -> Option<&KeyInfo> {
         return self.layout_key_info.iter()
             .filter(move |element| *key == *element.key())
             .next();
     }
     
-    fn find_key_info_form_string(&self, string : &String) -> Option<&KeyInfo> {
+    fn find_key_info_from_string(&self, string : &String) -> Option<&KeyInfo> {
         return self.layout_key_info.iter()
             .filter(move |element| *string == *element.key_string())
             .next();

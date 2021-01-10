@@ -3,9 +3,12 @@ use roccat_vulcan_api_rs::keyboard;
 use roccat_vulcan_api_rs::config;
 use roccat_vulcan_api_rs::keyboard::KeyboardApi;
 use roccat_vulcan_api_rs::layout;
-
-
-use std::time::{Duration, Instant};
+use roccat_vulcan_api_rs::color::ColorBuffer;
+use roccat_vulcan_api_rs::color::ColorRgb;
+use std::{
+    thread::sleep,
+    time::{Duration, Instant},
+};
 
 fn test_time (api: &hidapi::HidApi) {
     let now = Instant::now();
@@ -17,6 +20,7 @@ fn test_time (api: &hidapi::HidApi) {
 }
 
 fn main() {
+    
     let api = hidapi::HidApi::new().unwrap();
     for device in api.device_list() {
         let product_id_list = roccat_vulcan_api_rs::config::get_products_id_default();
@@ -24,14 +28,18 @@ fn main() {
             println!{"vendor : {}, usage page : {}, usage : {}, intreface : {}", device.vendor_id(), device.usage_page(), device.usage(), device.interface_number()}
         }
     }
+    
+    
     let mut keyboard = KeyboardApi::get_api_from_hidapi(&api).unwrap();
-    let result = keyboard.initialise_control_device(&keyboard::ControlerFeatureKind::Rainbow);
+    //let result = keyboard.initialise_control_device(&keyboard::ControlerFeatureKind::Rainbow);
     //let result = keyboard.initialise_control_device(&keyboard::ControlerFeatureKind::Alternative);
     
-    match result{
-        Ok(_) => println!("ok"),
-        Err(err) => println!("{:?}", err),
-    };
+    
+    let buffer = ColorBuffer::<ColorRgb>::new(ColorRgb::new(0,255,255));
+    keyboard.render(&buffer);
+    sleep(Duration::from_millis(1000));
+    
+    
     /*
     let key_list = key::get_layout_info_ch();
     loop {

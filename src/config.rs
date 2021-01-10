@@ -156,7 +156,14 @@ pub mod constants {
         &FEATURE_REPORT_9,
     ];
     
+    /// header for the led write buffer
     pub const LED_FEATURE_REPORT_HEAD: [u8; 4] = [0xa1, 0x01, 0x01, 0xb4];
+    /// Number of key to for the led divice. It is used to build the color buffer.
+    pub const NUMBER_KEY_LED_BUFFER: usize = 144;
+    /// size of key packet, i.e we write the r value for 12 key then the g for 12 key etc
+    pub const KEY_PACKET_SIZE: usize = 12;
+    /// the size of bite pascket sewnd to the divice
+    pub const BITE_PACKET_SIZE: usize = 64;
 }
 
 /// Basic HID interface filter.
