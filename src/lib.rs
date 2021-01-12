@@ -4,7 +4,7 @@
 //! # Usage
 //! 
 //! add on your dependencies of Cargo.toml
-//! `roccat_vulcan_api_rs = { version = "0.1.0", git = "https://github.com/ChickenStorm/roccat-vulcan-api-rs" }`.
+//! `roccat_vulcan_api_rs = { version = "0.1.1", git = "https://github.com/ChickenStorm/roccat-vulcan-api-rs" }`.
 //!
 //! The main way to interact with the API is through [`KeyboardApi`].
 //! Note that when the structure is dropped the keyboard will go back to the default rainbow behavior.
