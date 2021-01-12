@@ -48,6 +48,31 @@ impl ColorRgb {
             b: array[2],
         }
     }
+    
+    pub fn r_mut(&mut self) -> &mut u8 {
+        return &mut self.r;
+    }
+    
+    pub fn g_mut(&mut self) -> &mut u8 {
+        return &mut self.g;
+    }
+    
+    pub fn b_mut(&mut self) -> &mut u8 {
+        return &mut self.b;
+    }
+    
+    pub fn set_r(&mut self, r: u8){
+        self.r = r;
+    }
+    
+    pub fn set_g(&mut self, g: u8){
+        self.g = g;
+    }
+    
+    pub fn set_b(&mut self, b: u8){
+        self.b = b;
+    }
+    
 }
 
 impl Color for ColorRgb {

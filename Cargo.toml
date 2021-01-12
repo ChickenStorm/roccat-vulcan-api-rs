@@ -1,12 +1,12 @@
 [package]
 name = "roccat-vulcan-api-rs"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["ChickenStorm <tetras.aigle@yahoo.fr>"]
 edition = "2018"
 readme = "README.md"
 repository = "https://github.com/ChickenStorm/roccat-vulcan-api-rs"
 license = "MIT"
-categories = ["api-bindings"]
+categories = ["hardware-support"]
 description  = "Roccat Vulcan keyboard illumination API"
 keywords  = ["roccat", "vulcan", "keyboard", "lighting", "api"]
 

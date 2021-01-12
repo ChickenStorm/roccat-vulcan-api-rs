@@ -1,31 +1,23 @@
-extern crate hidapi;
+extern crate roccat_vulcan_api_rs;
 
-use roccat_vulcan_api_rs::keyboard::KeyboardApi;
-use roccat_vulcan_api_rs::layout::{
-    Key,
-    Layout,
-    layout_fr_ch::LayoutFrCh
-};
-use roccat_vulcan_api_rs::color::{
+use roccat_vulcan_api_rs::{
+    constants,
     ColorRgb,
     ColorBuffer,
     Color,
+    KeyboardApi,
+    LayoutFrCh,
+    Layout,
+    Key,
 };
-use roccat_vulcan_api_rs::constants;
-use std::{
-    thread::sleep,
-    time::{Duration, Instant},
-};
+use std::time::Duration;
 
 fn main() {
     
-    let api = hidapi::HidApi::new().unwrap();
-    
     let mut key_press_mask: [bool; constants::NUMBER_KEY_LED_BUFFER] = [false; constants::NUMBER_KEY_LED_BUFFER];
-    let keyboard = KeyboardApi::get_api_from_hidapi(&api).unwrap();
-    let base_color = ColorRgb::new(255,255,255);
-    let press_color = vec![ColorRgb::new(255,0,255), ColorRgb::new(0,0,255), ColorRgb::new(255,0,0), ColorRgb::new(0,255,255)];
-    let mut press_count: usize = 0;
+    let keyboard = KeyboardApi::get_api().unwrap();
+    let base_color = ColorRgb::new(0,255,255);
+    let press_color = ColorRgb::new(255,0,255);
     let mut buffer = ColorBuffer::<ColorRgb>::new(base_color);
     let layout = LayoutFrCh::new();
     keyboard.render(&buffer).unwrap();
@@ -40,12 +32,8 @@ fn main() {
                     }
                     let index_key = *key.key_code_light() as usize;
                     if index_key < buffer.buffer().len(){
-                        if keypress.is_pressed(){
-                            buffer.buffer_mut()[index_key] = press_color[press_count % press_color.len()];
-                            press_count += 1;
-                        }
-                        key_press_mask[index_key] = keypress.is_pressed();
-                        
+                        buffer.buffer_mut()[index_key] = press_color;
+                        key_press_mask[index_key] = keypress.is_pressed()
                     }
                 }
             }

@@ -5,7 +5,7 @@
 // todo verify that the device is not loaded.
 
 use super::{
-    layout,
+    layout::Keypress,
     color::{
         Color,
         ColorBuffer,
@@ -16,6 +16,7 @@ use super::{
 use std::{
     thread::sleep,
     time::{Duration, Instant},
+    vec::Vec,
 };
 
 /// Differents error returned by the API
@@ -32,6 +33,7 @@ pub enum ErrorRoccatVulcanApi {
     ToMuchTimeWaited(Duration),
     /// error while trying the get the hdiapi.
     HidApiError(hidapi::HidError),
+    InvalidInput,
 }
 
 /// get the product id of the detected divice
@@ -88,7 +90,7 @@ pub struct KeyboardApi {
 }
 
 /// Sleep duration for KeyboardApi::wait_for_control_device.
-const WAIT_FOR_CONTROL_DURATION: Duration = Duration::from_micros(1);
+const WAIT_FOR_CONTROL_DURATION: Duration = Duration::from_millis(1);
 /// Max time wating for device in KeyboardApi::wait_for_control_device.
 const MAX_WAIT_DURATION: Duration = Duration::from_millis(100);
 
@@ -189,7 +191,7 @@ impl KeyboardApi {
     }
     
     /// Wait until a key event and return the [`super::Keypress`] associated with it.
-    pub fn wait_for_key_press(&self) -> Result<layout::Keypress, ErrorRoccatVulcanApi> {
+    pub fn wait_for_key_press(&self) -> Result<Keypress, ErrorRoccatVulcanApi> {
         listen_key_press(&self.read).map_err(|err| ErrorRoccatVulcanApi::ReadDeviceError(err))
     }
     
@@ -198,10 +200,32 @@ impl KeyboardApi {
         let buffer_bite = buffer.get_led_buffer();
         let bite_to_write = constants::BITE_PACKET_SIZE + 1;
         for i in 0..(buffer_bite.len() / bite_to_write){
-            let buffer_write = &buffer_bite[(i * ( bite_to_write)).. (i + 1) * bite_to_write];
+            let buffer_write = &buffer_bite[(i * ( bite_to_write))..(i + 1) * bite_to_write];
             self.led.write(buffer_write).map_err(|error| ErrorRoccatVulcanApi::LedDeviceError(error))?;
         }
         Ok(())
+    }
+    
+    /// read key press for a time of at least duration and return a vector of the keypress that occured for this duration.
+    pub fn read_key_press(&self, duration: Duration) -> Result<Vec<Keypress>, ErrorRoccatVulcanApi> {
+        if duration.as_millis() > i32::MAX as u128 {
+            return  Err(ErrorRoccatVulcanApi::InvalidInput);
+        }
+        let mut vector_result: Vec<Keypress> = Vec::new();
+        let now = Instant::now();
+        loop {
+            let elapsed = now.elapsed();
+            if duration <= elapsed {
+                break;
+            }
+            let mut buffer: [u8; 5] = [0; 5];
+            self.read.read_timeout(&mut buffer, (duration - elapsed).as_millis() as i32)
+                .map_err(|error| ErrorRoccatVulcanApi::ReadDeviceError(error))?;
+            if buffer[2] > 0 {
+                vector_result.push(Keypress::new_from_buffer(&buffer));
+            }
+        }
+        return Ok(vector_result);
     }
 }
 
@@ -213,12 +237,12 @@ impl Drop for KeyboardApi {
 }
 
 fn listen_key_press_raw(device: &hidapi::HidDevice) -> Result<[u8; 5], hidapi::HidError> {
-    let mut buffer: [u8; 5]= [0; 5];
+    let mut buffer: [u8; 5] = [0; 5];
     device.read(&mut buffer)?;
     return Ok(buffer);
 }
 
-fn listen_key_press(device: &hidapi::HidDevice) -> Result<layout::Keypress, hidapi::HidError> {
+fn listen_key_press(device: &hidapi::HidDevice) -> Result<Keypress, hidapi::HidError> {
     let buffer = listen_key_press_raw(device)?;
-    return Ok(layout::Keypress::new_from_buffer(&buffer));
+    return Ok(Keypress::new_from_buffer(&buffer));
 }

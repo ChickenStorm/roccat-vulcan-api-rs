@@ -7,7 +7,7 @@ Provide an API to control the lighting of the Roccat Vulcan 100 and 120.
 # Usage
 
 add on your dependencies of Cargo.toml
-`roccat_vulcan_api_rs = { version = "0.1.0", git = "https://github.com/ChickenStorm/roccat-vulcan-api-rs" }`.
+`roccat-vulcan-api-rs = { version = "0.1.1", git = "https://github.com/ChickenStorm/roccat-vulcan-api-rs", branch = "main" }`.
 
 
 The main way to interact with the API is through `KeyboardApi`.
