@@ -224,6 +224,7 @@ impl KeyboardApi {
     }
 
     /// read key press for a time of at least duration and return a vector of the keypress that occured for this duration.
+    #[allow(clippy::cast_possible_truncation)]
     pub fn read_key_press(
         &self,
         duration: Duration,
@@ -243,7 +244,7 @@ impl KeyboardApi {
                 .read_timeout(&mut buffer, (duration - elapsed).as_millis() as i32)
                 .map_err(ErrorRoccatVulcanApi::ReadDeviceError)?;
             if buffer[2] > 0 {
-                vector_result.push(Keypress::new_from_buffer(&buffer));
+                vector_result.push(Keypress::new_from_buffer(buffer));
             }
         }
         Ok(vector_result)
@@ -265,5 +266,5 @@ fn listen_key_press_raw(device: &hidapi::HidDevice) -> Result<[u8; 5], hidapi::H
 
 fn listen_key_press(device: &hidapi::HidDevice) -> Result<Keypress, hidapi::HidError> {
     let buffer = listen_key_press_raw(device)?;
-    Ok(Keypress::new_from_buffer(&buffer))
+    Ok(Keypress::new_from_buffer(buffer))
 }

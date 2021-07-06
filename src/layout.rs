@@ -18,7 +18,7 @@ pub struct Keypress {
 
 impl Keypress {
     /// read key press from buffer hid read buffer
-    pub fn new_from_buffer(buffer: &[u8; 5]) -> Self {
+    pub const fn new_from_buffer(buffer: [u8; 5]) -> Self {
         Self {
             key_code: KeyCodePress::new(buffer[2], buffer[3]),
             is_pressed: {
@@ -30,18 +30,18 @@ impl Keypress {
         }
     }
 
-    pub fn new(key_code: KeyCodePress, is_pressed: bool) -> Self {
+    pub const fn new(key_code: KeyCodePress, is_pressed: bool) -> Self {
         Self {
             key_code,
             is_pressed,
         }
     }
 
-    pub fn key_code(&self) -> &KeyCodePress {
+    pub const fn key_code(&self) -> &KeyCodePress {
         &self.key_code
     }
 
-    pub fn is_pressed(&self) -> bool {
+    pub const fn is_pressed(&self) -> bool {
         self.is_pressed
     }
 }
@@ -60,18 +60,18 @@ pub struct KeyCodePress {
 }
 
 impl KeyCodePress {
-    pub fn new(first_u8: u8, seconde_u8: u8) -> Self {
+    pub const fn new(first_u8: u8, seconde_u8: u8) -> Self {
         Self {
             first_u8,
             seconde_u8,
         }
     }
 
-    pub fn first_u8(&self) -> u8 {
+    pub const fn first_u8(&self) -> u8 {
         self.first_u8
     }
 
-    pub fn seconde_u8(&self) -> u8 {
+    pub const fn seconde_u8(&self) -> u8 {
         self.seconde_u8
     }
 }
@@ -233,7 +233,7 @@ pub struct KeyInfo {
 }
 
 impl KeyInfo {
-    pub fn new(
+    pub const fn new(
         key_code_light: KeyCodeLight,
         key_code_press: KeyCodePress,
         key_string: String,
@@ -261,19 +261,19 @@ impl KeyInfo {
         }
     }
 
-    pub fn key_code_light(&self) -> &KeyCodeLight {
+    pub const fn key_code_light(&self) -> &KeyCodeLight {
         &self.key_code_light
     }
 
-    pub fn key_code_press(&self) -> &KeyCodePress {
+    pub const fn key_code_press(&self) -> &KeyCodePress {
         &self.key_code_press
     }
 
-    pub fn key_string(&self) -> &String {
+    pub const fn key_string(&self) -> &String {
         &self.key_string
     }
 
-    pub fn key(&self) -> &Key {
+    pub const fn key(&self) -> &Key {
         &self.key
     }
 }
@@ -287,6 +287,7 @@ impl From<(KeyCodeLight, KeyCodePress, String, Key)> for KeyInfo {
 
 /// Information to encode a layout, get key info from differents way to encode a key.
 pub trait Layout {
+    #[allow(clippy::trivially_copy_pass_by_ref)]
     fn find_key_info_from_light(&self, key_code_light: &KeyCodeLight) -> Option<&KeyInfo>;
     fn find_key_info_from_press_code(&self, key_code_press: &KeyCodePress) -> Option<&KeyInfo>;
     fn find_key_info_from_key(&self, key: &Key) -> Option<&KeyInfo>;

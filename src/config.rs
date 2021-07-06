@@ -11,11 +11,11 @@ pub mod constants {
     /// The reason the usage page is 10 is unkown and may change device it device.
     pub const USAGE_PAGE_READ_DEVICE: u16 = 10;
     /// Defaut interface number of the read device.
-    pub const READ_INTERFACE_NUMBER: i32 = 1;
+    pub const READ_INTERFACE_NUMBER: i32 = 1_i32;
     /// Defaut interface number of the control device.
-    pub const CONTROL_INTERFACE_NUMBER: i32 = 1;
+    pub const CONTROL_INTERFACE_NUMBER: i32 = 1_i32;
     /// Defaut interface number of the led device.
-    pub const LED_INTERFACE_NUMBER: i32 = 3;
+    pub const LED_INTERFACE_NUMBER: i32 = 3_i32;
 
     const FEATURE_REPORT_1: [u8; 3] = [0x15, 0x00, 0x01];
     const FEATURE_REPORT_2: [u8; 4] = [0x05, 0x04, 0x00, 0x04];
@@ -156,18 +156,18 @@ pub struct HidInterfaceInfo {
 }
 
 impl HidInterfaceInfo {
-    pub fn new(product_id: u16, interface_number: i32) -> Self {
+    pub const fn new(product_id: u16, interface_number: i32) -> Self {
         Self {
             product_id,
             interface_number,
         }
     }
 
-    pub fn product_id(&self) -> u16 {
+    pub const fn product_id(&self) -> u16 {
         self.product_id
     }
 
-    pub fn interface_number(&self) -> i32 {
+    pub const fn interface_number(&self) -> i32 {
         self.interface_number
     }
 }
@@ -188,7 +188,7 @@ pub enum HidInterfaceFilter {
 }
 
 impl HidInterfaceUserPageInfo {
-    pub fn new(product_id: u16, interface_number: i32, usage_page: u16) -> Self {
+    pub const fn new(product_id: u16, interface_number: i32, usage_page: u16) -> Self {
         Self {
             product_id,
             interface_number,
@@ -196,15 +196,15 @@ impl HidInterfaceUserPageInfo {
         }
     }
 
-    pub fn product_id(&self) -> u16 {
+    pub const fn product_id(&self) -> u16 {
         self.product_id
     }
 
-    pub fn interface_number(&self) -> i32 {
+    pub const fn interface_number(&self) -> i32 {
         self.interface_number
     }
 
-    pub fn usage_page(&self) -> u16 {
+    pub const fn usage_page(&self) -> u16 {
         self.usage_page
     }
 }
@@ -219,7 +219,7 @@ pub struct KeyboardIntrefacesInfo {
 
 impl KeyboardIntrefacesInfo {
     /// Default vulcan 100 info.
-    pub fn get_vulcan_100() -> Self {
+    pub const fn get_vulcan_100() -> Self {
         let product_id = constants::VULCAN_100_PRODUCT_ID;
         Self {
             read_interface: HidInterfaceFilter::UsagePage(HidInterfaceUserPageInfo::new(
@@ -239,7 +239,7 @@ impl KeyboardIntrefacesInfo {
     }
 
     /// Default vulcan 120 info.
-    pub fn get_vulcan_120() -> Self {
+    pub const fn get_vulcan_120() -> Self {
         let product_id = constants::VULCAN_120_PRODUCT_ID;
         Self {
             read_interface: HidInterfaceFilter::UsagePage(HidInterfaceUserPageInfo::new(
@@ -258,28 +258,28 @@ impl KeyboardIntrefacesInfo {
         }
     }
 
-    pub fn product_id(&self) -> u16 {
+    pub const fn product_id(&self) -> u16 {
         match &self.led_interface {
             HidInterfaceFilter::Basic(interface) => interface.product_id(),
             HidInterfaceFilter::UsagePage(interface) => interface.product_id(),
         }
     }
 
-    pub fn read_interface(&self) -> &HidInterfaceFilter {
+    pub const fn read_interface(&self) -> &HidInterfaceFilter {
         &self.read_interface
     }
 
-    pub fn control_interface(&self) -> &HidInterfaceFilter {
+    pub const fn control_interface(&self) -> &HidInterfaceFilter {
         &self.control_interface
     }
 
-    pub fn led_interface(&self) -> &HidInterfaceFilter {
+    pub const fn led_interface(&self) -> &HidInterfaceFilter {
         &self.led_interface
     }
 }
 
 /// Return the default value for the interfaces of vulcan 100 and 120
-pub fn get_default_interface_info() -> [KeyboardIntrefacesInfo; 2] {
+pub const fn get_default_interface_info() -> [KeyboardIntrefacesInfo; 2] {
     [
         KeyboardIntrefacesInfo::get_vulcan_100(),
         KeyboardIntrefacesInfo::get_vulcan_120(),

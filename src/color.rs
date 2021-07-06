@@ -34,12 +34,12 @@ pub struct ColorRgb {
 }
 
 impl ColorRgb {
-    pub fn new(r: u8, g: u8, b: u8) -> Self {
+    pub const fn new(r: u8, g: u8, b: u8) -> Self {
         Self { r, g, b }
     }
 
     /// create [`ColorRgb`] form `[R, G, B]`
-    pub fn new_from_array(array: [u8; 3]) -> Self {
+    pub const fn new_from_array(array: [u8; 3]) -> Self {
         Self {
             r: array[0],
             g: array[1],
@@ -123,45 +123,50 @@ pub struct ColorRgba {
 }
 
 impl ColorRgba {
+    #[allow(clippy::cast_possible_truncation)]
+    #[allow(clippy::cast_sign_loss)]
     pub fn new_from_float(r: u8, g: u8, b: u8, f: f32) -> Self {
         Self {
             r,
             g,
             b,
-            a: (f.max(0f32).min(1f32) * 255f32).floor() as u8,
+            a: (f.max(0_f32).min(1_f32) * 255_f32).floor() as u8,
         }
     }
 
-    pub fn new(r: u8, g: u8, b: u8, a: u8) -> Self {
+    pub const fn new(r: u8, g: u8, b: u8, a: u8) -> Self {
         Self { r, g, b, a }
     }
 
-    pub fn r_raw(&self) -> u8 {
+    pub const fn r_raw(&self) -> u8 {
         self.r
     }
 
-    pub fn g_raw(&self) -> u8 {
+    pub const fn g_raw(&self) -> u8 {
         self.g
     }
 
-    pub fn b_raw(&self) -> u8 {
+    pub const fn b_raw(&self) -> u8 {
         self.b
     }
 
-    pub fn a(&self) -> u8 {
+    pub const fn a(&self) -> u8 {
         self.a
     }
 }
 
 impl Color for ColorRgba {
+    #[allow(clippy::cast_possible_truncation)]
     fn r(&self) -> u8 {
         ((self.r as u16 * self.a as u16) / 255_u16) as u8
     }
 
+    #[allow(clippy::cast_possible_truncation)]
     fn g(&self) -> u8 {
         ((self.g as u16 * self.a as u16) / 255_u16) as u8
     }
 
+    #[allow(clippy::cast_possible_truncation)]
     fn b(&self) -> u8 {
         ((self.b as u16 * self.a as u16) / 255_u16) as u8
     }
@@ -286,5 +291,5 @@ fn test_packet_index() {
 #[cfg(test)]
 #[test]
 fn test_buffer_size() {
-    assert_eq!(BUFFER_SIZE_PACKETED % (constants::BITE_PACKET_SIZE + 1), 0)
+    assert_eq!(BUFFER_SIZE_PACKETED % (constants::BITE_PACKET_SIZE + 1), 0);
 }

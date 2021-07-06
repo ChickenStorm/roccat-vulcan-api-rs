@@ -3,6 +3,7 @@
 use super::{Key, KeyCodeLight, KeyCodePress, KeyInfo, Layout};
 
 /// get Layout key associative
+#[allow(clippy::non_ascii_literal)]
 fn get_layout_info_fr_ch() -> [KeyInfo; 107] {
     // I can not move that in a constant because of the .to_string
     // Latter I might change the key info to have a &'static str
@@ -146,7 +147,7 @@ impl LayoutFrCh {
     }
 
     /// get the array of [`KeyInfo`]
-    pub fn layout_key_info(&self) -> &[KeyInfo; 107] {
+    pub const fn layout_key_info(&self) -> &[KeyInfo; 107] {
         &self.layout_key_info
     }
 }
