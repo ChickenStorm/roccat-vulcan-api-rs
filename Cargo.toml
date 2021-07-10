@@ -12,6 +12,7 @@ keywords  = ["roccat", "vulcan", "keyboard", "lighting", "api"]
 
 [features]
 serde-serialize = ["serde"]
+no-keyboard-test = []
 default = ["serde-serialize"]
 
 [dependencies]

@@ -18,6 +18,9 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
       
+    - name: Install libhidapi
+      run: sudo apt install libhidapi-dev libusb-1.0-0-dev
+    
     - name: Install Rust stable toolchain
       uses: actions-rs/toolchain@v1
       with:

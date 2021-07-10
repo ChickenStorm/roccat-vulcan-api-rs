@@ -135,11 +135,13 @@ fn get_layout_info_fr_ch() -> [KeyInfo; 107] {
 }
 
 /// Swiss French Layout
+// TODO faire un ZST ?
 pub struct LayoutFrCh {
     layout_key_info: [KeyInfo; 107],
 }
 
 impl LayoutFrCh {
+    /// Initialize a configuration
     pub fn new() -> Self {
         Self {
             layout_key_info: get_layout_info_fr_ch(),

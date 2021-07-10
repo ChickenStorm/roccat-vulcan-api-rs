@@ -28,6 +28,7 @@ fn test_hid_api_and_lock() {
 
 /// basic render
 #[test]
+#[cfg(not(feature = "no-keyboard-test"))]
 fn get_keyboard() {
     let api = MUTEX_API_TEST.lock().unwrap();
     let keyboard = keyboard::KeyboardApi::get_api_from_interface_hidapi(
@@ -86,6 +87,7 @@ fn test_color_buffer() {
 }
 
 #[test]
+#[cfg(not(feature = "no-keyboard-test"))]
 fn test_time() {
     let api = MUTEX_API_TEST.lock().unwrap();
     let now = Instant::now();
