@@ -8,14 +8,11 @@
 //! ```
 
 use super::constants;
-use std::{
-    cmp::{Eq, Ord, PartialEq, PartialOrd},
-    convert::From,
-    default::Default,
-};
+use std::fmt::{Display, Formatter};
 
 /// Trait that define a Color with trhat can yield a (R,G,B) representation
 pub trait Color {
+    // TODO remove trait
     fn r(&self) -> u8;
     fn g(&self) -> u8;
     fn b(&self) -> u8;
@@ -26,7 +23,7 @@ pub trait Color {
 }
 
 /// RGB color representation
-#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Copy)]
+#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Copy, Hash)]
 pub struct ColorRgb {
     r: u8,
     g: u8,
@@ -105,16 +102,20 @@ impl From<(u8, u8, u8)> for ColorRgb {
     }
 }
 
-/* error due to reimplementing  From<ColorRgb> for ColorRgb
-impl<T: Color> From<T> for ColorRgb {
-    fn from(c: T) -> Self {
-        ColorRgb::new(c.r(), c.g(), c.b())
+impl From<ColorRgb> for (u8, u8, u8) {
+    fn from(color: ColorRgb) -> Self {
+        (color.r(), color.g(), color.b())
     }
 }
-*/
+
+impl Display for ColorRgb {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {}, {})", self.r(), self.g(), self.b())
+    }
+}
 
 /// Color with alpha parameter
-#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
 pub struct ColorRgba {
     r: u8,
     g: u8,
@@ -158,17 +159,17 @@ impl ColorRgba {
 impl Color for ColorRgba {
     #[allow(clippy::cast_possible_truncation)]
     fn r(&self) -> u8 {
-        ((self.r as u16 * self.a as u16) / 255_u16) as u8
+        apply_lumninosity(self.r, self.a)
     }
 
     #[allow(clippy::cast_possible_truncation)]
     fn g(&self) -> u8 {
-        ((self.g as u16 * self.a as u16) / 255_u16) as u8
+        apply_lumninosity(self.g, self.a)
     }
 
     #[allow(clippy::cast_possible_truncation)]
     fn b(&self) -> u8 {
-        ((self.b as u16 * self.a as u16) / 255_u16) as u8
+        apply_lumninosity(self.b, self.a)
     }
 }
 
@@ -176,6 +177,11 @@ impl From<ColorRgb> for ColorRgba {
     fn from(c: ColorRgb) -> Self {
         ColorLuminosity::new(c.r, c.g, c.b, 255_u8)
     }
+}
+
+#[allow(clippy::cast_possible_truncation)]
+const fn apply_lumninosity(value: u8, lum: u8) -> u8 {
+    ((value as u16 * lum as u16) / 255_u16) as u8
 }
 
 impl From<ColorRgba> for ColorRgb {
@@ -188,6 +194,7 @@ impl From<ColorRgba> for ColorRgb {
 pub type ColorLuminosity = ColorRgba;
 
 /// Encode the set of color for [`super::KeyboardApi::render`].
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
 pub struct ColorBuffer<T>
 where
     T: Color + Copy,

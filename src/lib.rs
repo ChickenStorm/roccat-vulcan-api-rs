@@ -14,7 +14,7 @@
 //!
 //! # Examples
 //! To load and initialized a keyboard use
-//! ```
+//! ```no_run
 //! use roccat_vulcan_api_rs::{KeyboardApi, config, ColorBuffer, ColorRgb};
 //! use std::{
 //!     thread::sleep,

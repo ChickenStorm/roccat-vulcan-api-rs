@@ -185,3 +185,32 @@ impl Layout for LayoutFrCh {
             .find(move |element| *string == *element.key_string())
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    
+    /// layout search function
+    #[test]
+    fn search_key_layout_ch_fr() {
+        let layout = LayoutFrCh::new();
+        for key_info in layout.layout_key_info().iter() {
+            assert_eq!(
+                layout.find_key_info_from_light(key_info.key_code_light()),
+                Some(key_info)
+            );
+            assert_eq!(
+                layout.find_key_info_from_press_code(key_info.key_code_press()),
+                Some(key_info)
+            );
+            assert_eq!(
+                layout.find_key_info_from_key(key_info.key()),
+                Some(key_info)
+            );
+            assert_eq!(
+                layout.find_key_info_from_string(key_info.key_string()),
+                Some(key_info)
+            );
+        }
+    }
+}

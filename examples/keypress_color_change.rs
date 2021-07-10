@@ -1,5 +1,3 @@
-extern crate roccat_vulcan_api_rs;
-
 use roccat_vulcan_api_rs::layout::{layout_fr_ch::LayoutFrCh, Key, Layout};
 use roccat_vulcan_api_rs::ColorBuffer;
 use roccat_vulcan_api_rs::ColorRgb;

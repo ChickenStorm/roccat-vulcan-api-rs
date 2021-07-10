@@ -1,5 +1,3 @@
-extern crate roccat_vulcan_api_rs;
-
 use roccat_vulcan_api_rs::{
     constants, Color, ColorBuffer, ColorRgb, Key, KeyboardApi, Layout, LayoutFrCh,
 };

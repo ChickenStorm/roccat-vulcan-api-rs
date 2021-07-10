@@ -1,5 +1,3 @@
-extern crate hidapi;
-
 use roccat_vulcan_api_rs::{
     color::{Color, ColorBuffer, ColorRgb},
     constants,
