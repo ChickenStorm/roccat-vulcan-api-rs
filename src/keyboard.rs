@@ -1,174 +1,131 @@
-//! Main module of the API
-//!
-
-// todo verify that the device is not loaded.
-
-use super::{
-    color::{Color, ColorBuffer},
-    config,
-    config::constants,
-    layout::Keypress,
+use crate::{
+    color, reports, ColorBuffer, ColorRgb, ErrorRoccatVulcanApi, KeyboardIntrefacesFilter, Keypress,
 };
-use std::{
-    thread::sleep,
-    time::{Duration, Instant},
-    vec::Vec,
-};
+use hidapi::{HidApi, HidDevice};
+#[cfg(feature = "serde-serialize")]
+use serde::{Deserialize, Serialize};
+use std::thread;
+use std::time::{Duration, Instant};
 
-/// Differents error returned by the API
-#[derive(Debug)]
-pub enum ErrorRoccatVulcanApi {
-    DeviceNotFound,
-    NoLedDevice,
-    LedDeviceError(hidapi::HidError),
-    NoControlDevice,
-    ControlDeviceError(hidapi::HidError),
-    NoReadDevice,
-    ReadDeviceError(hidapi::HidError),
-    /// Too much time elapsed while wasting for the device to be ready
-    ToMuchTimeWaited(Duration),
-    /// error while trying the get the hdiapi.
-    HidApiError(hidapi::HidError),
-    InvalidInput,
-}
+type Res<T> = Result<T, ErrorRoccatVulcanApi>;
 
-/// get the product id of the detected divice
-fn get_present_model(product_ids: &[u16], api: &hidapi::HidApi) -> Option<u16> {
-    Some(
-        api.device_list()
-            .find(|device| product_ids.contains(&device.product_id()))?
-            .product_id(),
-    )
-}
-/// filter the intreface
-fn get_device_infos<'a>(
-    interface_filter: &'a config::HidInterfaceFilter,
-    api: &'a hidapi::HidApi,
-) -> impl Iterator<Item = &'a hidapi::DeviceInfo> {
-    api.device_list()
-        .filter(move |device| match interface_filter {
-            config::HidInterfaceFilter::Basic(interface_filter_basic) => {
-                interface_filter_basic.product_id() == device.product_id()
-                    && interface_filter_basic.interface_number() == device.interface_number()
-            }
-            config::HidInterfaceFilter::UsagePage(interface_filter_usage_page) => {
-                interface_filter_usage_page.product_id() == device.product_id()
-                    && interface_filter_usage_page.interface_number() == device.interface_number()
-                    && interface_filter_usage_page.usage_page() == device.usage_page()
-            }
-        })
-}
-
-/// Verify if the given device is the correct control device.
-/// Note that this change the state of the HidDevice.
-/// If you want to close it you will have to resend a similar feature vreport.
-fn is_correct_control_device(device: &hidapi::HidDevice) -> bool {
-    let mut buffer: [u8; 255] = [0x00; 255];
-    buffer[0] = 0x0f;
-    let a = device.get_feature_report(&mut buffer);
-    match a {
-        Ok(val) => val > 0,
-        Err(_) => false,
-    }
-}
-
-/// Kind of feature report
-enum ControlerFeatureKind {
-    /// Default rainbow behaviour.
-    Rainbow,
-    /// Mode where the API can send custom configuration.
-    /// If this mode would allowed to stay after opening and closing roccar swarm,
-    /// it would look like that there is some strips changing color form blue and green.
-    Custom,
-}
-
-/// Main object for the comunicate with the API.
-pub struct KeyboardApi {
-    read: hidapi::HidDevice,
-    control: hidapi::HidDevice,
-    led: hidapi::HidDevice,
-}
-
-/// Sleep duration for KeyboardApi::wait_for_control_device.
+/// Sleep duration for [`KeyboardApi::wait_for_control_device`].
 const WAIT_FOR_CONTROL_DURATION: Duration = Duration::from_millis(1);
-/// Max time wating for device in KeyboardApi::wait_for_control_device.
+/// Max time wating for device in [`KeyboardApi::wait_for_control_device`].
 const MAX_WAIT_DURATION: Duration = Duration::from_millis(100);
 
+/// Main API
+// TODO more doc
+pub struct KeyboardApi {
+    /// Read device that look for key press
+    read: HidDevice,
+    /// Control device where feature are send to initialize the keyboard
+    control: HidDevice,
+    /// Led device which send color for the keyboard
+    led: HidDevice,
+}
+
 impl KeyboardApi {
-    /// return the KeyboardApi contructed form hidapi::HidApi and a liste of configuration to look for.
-    /// It only consider the first ellement that match the product id.
-    pub fn get_api_from_interface_hidapi(
-        hidapi: &hidapi::HidApi,
-        interface_infos: &[config::KeyboardIntrefacesInfo],
-    ) -> Result<Self, ErrorRoccatVulcanApi> {
-        let model_list = interface_infos
-            .iter()
-            .map(|element| element.product_id())
-            .collect::<Vec<_>>();
-        let model_present =
-            get_present_model(&model_list, hidapi).ok_or(ErrorRoccatVulcanApi::DeviceNotFound)?;
-        let interface_info: &config::KeyboardIntrefacesInfo = interface_infos
-            .iter()
-            .find(|element| element.product_id() == model_present)
-            .unwrap(); // if there is no element here it is a logical error
-        let read_hid_info = get_device_infos(interface_info.read_interface(), hidapi)
-            .next()
+    /// Look for the default configuration
+    /// # Errors
+    /// - [`ErrorRoccatVulcanApi::KeyboardNotFound`] Keyboard not found,
+    /// - [`ErrorRoccatVulcanApi::NoLedDevice`] Led device not found,
+    /// - [`ErrorRoccatVulcanApi::LedDeviceError`] Led device error,
+    /// - [`ErrorRoccatVulcanApi::NoControlDevice`] Control device not found,
+    /// - [`ErrorRoccatVulcanApi::ControlDeviceError`] Control device error,
+    /// - [`ErrorRoccatVulcanApi::NoReadDevice`] Read device not found,
+    /// - [`ErrorRoccatVulcanApi::ReadDeviceError`] Read device error,
+    /// - [`ErrorRoccatVulcanApi::WaitedToMuchTime`] Error while initalizing key board: waited for too long,
+    /// - [`ErrorRoccatVulcanApi::HidApiError`] Api error,
+    pub fn new() -> Res<Self> {
+        let api = hidapi::HidApi::new().map_err(ErrorRoccatVulcanApi::HidApiError)?;
+        Self::new_from_model_list(
+            &api,
+            &[
+                KeyboardIntrefacesFilter::vulcan_100(),
+                KeyboardIntrefacesFilter::vulcan_120(),
+            ],
+        )
+    }
+
+    /// Initialize the API by seraching for a keyboard matching an ellement of a list.
+    /// # Errors
+    /// see [Self::new]
+    pub fn new_from_model_list(
+        api: &HidApi,
+        interfaces_info: &[KeyboardIntrefacesFilter],
+    ) -> Res<Self> {
+        for interface in interfaces_info {
+            if let Ok(keyboard) = Self::new_model(api, interface) {
+                return Ok(keyboard);
+            }
+        }
+        Err(ErrorRoccatVulcanApi::KeyboardNotFound)
+    }
+
+    /// Initialize the API uing from a interface info.
+    /// # Errors
+    /// see [`Self::new`]
+    pub fn new_model(api: &HidApi, interface: &KeyboardIntrefacesFilter) -> Res<Self> {
+        if !api
+            .device_list()
+            .any(|device| device.product_id() == interface.control_interface().product_id())
+        {
+            return Err(ErrorRoccatVulcanApi::KeyboardNotFound);
+        }
+        let read_info = api
+            .device_list()
+            .find(|device| interface.read_interface().match_filter(&device))
             .ok_or(ErrorRoccatVulcanApi::NoReadDevice)?;
-        let led_device = get_device_infos(interface_info.led_interface(), hidapi)
-            .next()
+        let led_info = api
+            .device_list()
+            .find(|device| interface.led_interface().match_filter(&device))
             .ok_or(ErrorRoccatVulcanApi::NoLedDevice)?;
-        let ctrl_device_list = get_device_infos(interface_info.control_interface(), hidapi);
-        let control = ctrl_device_list
-            .map(|device| device.open_device(hidapi))
+        let control_info_list = api
+            .device_list()
+            .filter(|device| interface.control_interface().match_filter(&device));
+
+        let control = control_info_list
+            .map(|device| device.open_device(api))
             .find(|value| match value {
-                Ok(device) => is_correct_control_device(&device),
+                Ok(device) => Self::is_correct_control_device(&device),
                 Err(_) => false,
             })
             .ok_or(ErrorRoccatVulcanApi::NoControlDevice)?
             .or(Err(ErrorRoccatVulcanApi::NoControlDevice))?;
-        let read = read_hid_info
-            .open_device(hidapi)
+        let read = read_info
+            .open_device(api)
             .map_err(ErrorRoccatVulcanApi::ReadDeviceError)?;
-        let led = led_device
-            .open_device(hidapi)
+        let led = led_info
+            .open_device(api)
             .map_err(ErrorRoccatVulcanApi::LedDeviceError)?;
         read.set_blocking_mode(true)
             .map_err(ErrorRoccatVulcanApi::ReadDeviceError)?;
         let keyboard = Self { read, control, led };
-        keyboard.initialise_control_device(&ControlerFeatureKind::Custom)?;
-        sleep(WAIT_FOR_CONTROL_DURATION); // we seelp after initisation just to maje sure the fist render is done properly.
+        keyboard.initialise_control_device(ControlerFeatureKind::Custom)?;
+        thread::sleep(WAIT_FOR_CONTROL_DURATION); // we seelp after initisation just to maje sure the fist render is done properly.
         Ok(keyboard)
     }
 
-    /// Get KeyboardApi using a [`hidapi::HidApi`].
-    pub fn get_api_from_hidapi(hidapi: &hidapi::HidApi) -> Result<Self, ErrorRoccatVulcanApi> {
-        KeyboardApi::get_api_from_interface_hidapi(hidapi, &config::get_default_interface_info())
+    /// Verify if the given device is the correct control device.
+    /// Note that this change the state of the HidDevice.
+    /// If you want to close it you will have to resend a similar feature report.
+    fn is_correct_control_device(device: &HidDevice) -> bool {
+        let mut buffer: [u8; 255] = [0x00; 255];
+        buffer[0] = 0x0f;
+        let a = device.get_feature_report(&mut buffer);
+        match a {
+            Ok(val) => val > 0,
+            Err(_) => false,
+        }
     }
 
-    /// Get the api form a liste of interface filter.
-    pub fn get_api_from_list(
-        interface_infos: &[config::KeyboardIntrefacesInfo],
-    ) -> Result<Self, ErrorRoccatVulcanApi> {
-        let hidapi = hidapi::HidApi::new().map_err(ErrorRoccatVulcanApi::HidApiError)?;
-        KeyboardApi::get_api_from_interface_hidapi(&hidapi, interface_infos)
-    }
-
-    /// Default way to get KeyboardApi. If you want to use [`hidapi::HidApi`] you should use [`KeyboardApi::get_api_from_hidapi`].
-    /// as multiple [`hidapi::HidApi`] cannot coexist at the same time.
-    pub fn get_api() -> Result<Self, ErrorRoccatVulcanApi> {
-        let hidapi = hidapi::HidApi::new().map_err(ErrorRoccatVulcanApi::HidApiError)?;
-        KeyboardApi::get_api_from_hidapi(&hidapi)
-    }
-
-    /// Initialise the control device for the given color behaviour.
-    fn initialise_control_device(
-        &self,
-        kind: &ControlerFeatureKind,
-    ) -> Result<(), ErrorRoccatVulcanApi> {
+    /// Initialize the control device with either rainbow mode or custom mode
+    fn initialise_control_device(&self, kind: ControlerFeatureKind) -> Res<()> {
         let feature_reports = {
             match kind {
-                ControlerFeatureKind::Rainbow => &constants::FEATURE_REPORT_RAINBOW,
-                ControlerFeatureKind::Custom => &constants::FEATURE_REPORT_CUSTOM,
+                ControlerFeatureKind::Rainbow => &reports::FEATURE_REPORT_RAINBOW,
+                ControlerFeatureKind::Custom => &reports::FEATURE_REPORT_CUSTOM,
             }
         };
         for feature_report in feature_reports.iter() {
@@ -182,11 +139,13 @@ impl KeyboardApi {
 
     /// Wait for the control device to be ready.
     /// It is unclear if the sleep is enought or the verification on the get_feature report is necessary.
-    fn wait_for_control_device(&self) -> Result<(), ErrorRoccatVulcanApi> {
+    /// # Errors
+    /// returns [`ErrorRoccatVulcanApi::WaitedToMuchTime`] if we waited too long waiting the control device.
+    fn wait_for_control_device(&self) -> Res<()> {
         let now = Instant::now();
         loop {
             // It seams to me that the sleep is requierd but the time requierd might be aribtarly small.
-            sleep(WAIT_FOR_CONTROL_DURATION);
+            thread::sleep(WAIT_FOR_CONTROL_DURATION);
             let mut buffer: [u8; 255] = [0x00; 255];
             buffer[0] = 0x04;
             let size = self.control.get_feature_report(&mut buffer);
@@ -196,24 +155,21 @@ impl KeyboardApi {
                 }
             };
             if now.elapsed() > MAX_WAIT_DURATION {
-                return Err(ErrorRoccatVulcanApi::ToMuchTimeWaited(now.elapsed()));
+                return Err(ErrorRoccatVulcanApi::WaitedToMuchTime(now.elapsed()));
             }
         }
         Ok(())
     }
 
-    /// Wait until a key event and return the [`super::Keypress`] associated with it.
-    pub fn wait_for_key_press(&self) -> Result<Keypress, ErrorRoccatVulcanApi> {
-        listen_key_press(&self.read).map_err(ErrorRoccatVulcanApi::ReadDeviceError)
-    }
-
-    /// Render the given [`ColorBuffer`].
+    /// Renders a collor buffer
+    /// # Errors
+    /// [`ErrorRoccatVulcanApi::LedDeviceError`] if the lead device encountered an error
     pub fn render(
         &self,
-        buffer: &ColorBuffer<impl Color + Copy>,
+        buffer: &ColorBuffer<impl Into<ColorRgb> + Copy>,
     ) -> Result<(), ErrorRoccatVulcanApi> {
         let buffer_bite = buffer.get_led_buffer();
-        let bite_to_write = constants::BITE_PACKET_SIZE + 1;
+        let bite_to_write = color::BITE_PACKET_SIZE + 1;
         for i in 0..(buffer_bite.len() / bite_to_write) {
             let buffer_write = &buffer_bite[(i * (bite_to_write))..(i + 1) * bite_to_write];
             self.led
@@ -224,11 +180,11 @@ impl KeyboardApi {
     }
 
     /// read key press for a time of at least duration and return a vector of the keypress that occured for this duration.
+    /// # Errors
+    /// - [`ErrorRoccatVulcanApi::InvalidInput`] the duration is not valide
+    /// - [`ErrorRoccatVulcanApi::ReadDeviceError`] if the read device had an error
     #[allow(clippy::cast_possible_truncation)]
-    pub fn read_key_press(
-        &self,
-        duration: Duration,
-    ) -> Result<Vec<Keypress>, ErrorRoccatVulcanApi> {
+    pub fn read_key_press(&self, duration: Duration) -> Res<Vec<Keypress>> {
         if duration.as_millis() > i32::MAX as u128 {
             return Err(ErrorRoccatVulcanApi::InvalidInput);
         }
@@ -249,22 +205,51 @@ impl KeyboardApi {
         }
         Ok(vector_result)
     }
+
+    /// Block the thread until a key event or an error occur
+    /// # Errors
+    /// [`ErrorRoccatVulcanApi::ReadDeviceError`] when the read device has an error
+    pub fn wait_for_key_press(&self) -> Res<Keypress> {
+        self.listen_key_press()
+            .map_err(ErrorRoccatVulcanApi::ReadDeviceError)
+    }
+
+    /// wait for key press and rturn the raw value
+    fn listen_key_press_raw(&self) -> Result<[u8; 5], hidapi::HidError> {
+        let mut buffer: [u8; 5] = [0; 5];
+        self.read.read(&mut buffer)?;
+        Ok(buffer)
+    }
+
+    /// wait for a key perss and return a [`Keypress`]
+    fn listen_key_press(&self) -> Result<Keypress, hidapi::HidError> {
+        let buffer = self.listen_key_press_raw()?;
+        Ok(Keypress::new_from_buffer(buffer))
+    }
 }
 
 impl Drop for KeyboardApi {
     #[allow(unused_must_use)]
     fn drop(&mut self) {
-        self.initialise_control_device(&ControlerFeatureKind::Rainbow);
+        self.initialise_control_device(ControlerFeatureKind::Rainbow);
     }
 }
 
-fn listen_key_press_raw(device: &hidapi::HidDevice) -> Result<[u8; 5], hidapi::HidError> {
-    let mut buffer: [u8; 5] = [0; 5];
-    device.read(&mut buffer)?;
-    Ok(buffer)
+/// Kind of feature report
+#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Copy, Hash)]
+#[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
+enum ControlerFeatureKind {
+    /// Default rainbow behaviour.
+    Rainbow,
+    /// Mode where the API can send custom configuration.
+    /// If this mode would allowed to stay after opening and closing roccar swarm,
+    /// it would look like that there is some strips changing color form blue and green.
+    Custom,
 }
 
-fn listen_key_press(device: &hidapi::HidDevice) -> Result<Keypress, hidapi::HidError> {
-    let buffer = listen_key_press_raw(device)?;
-    Ok(Keypress::new_from_buffer(buffer))
+impl Default for ControlerFeatureKind {
+    /// Returns [`ControlerFeatureKind::Custom`]
+    fn default() -> Self {
+        Self::Custom
+    }
 }

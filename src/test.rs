@@ -1,10 +1,6 @@
 //! test module
 
-use super::{
-    color::{ColorBuffer, ColorRgb},
-    config, constants, keyboard,
-    layout::{layout_fr_ch::LayoutFrCh, Layout},
-};
+use crate::{color, ColorBuffer, ColorRgb, KeyboardApi, KeyboardIntrefacesFilter};
 use hidapi::HidApi;
 use once_cell::sync::Lazy;
 use std::{
@@ -15,6 +11,7 @@ use std::{
 
 mod version_number;
 
+/// We can only one HidApi working at once and test are done in parallel.
 static MUTEX_API_TEST: Lazy<Mutex<HidApi>> = Lazy::new(|| Mutex::new(HidApi::new().unwrap()));
 
 /// test the mutex for use in tests and getting the HID api
@@ -28,38 +25,34 @@ fn test_hid_api_and_lock() {
 #[cfg(not(feature = "no-keyboard-test"))]
 fn get_keyboard() {
     let api = MUTEX_API_TEST.lock().unwrap();
-    let keyboard = keyboard::KeyboardApi::get_api_from_interface_hidapi(
+    let keyboard = KeyboardApi::new_from_model_list(
         &api,
-        &config::get_default_interface_info(),
+        &[
+            KeyboardIntrefacesFilter::vulcan_100(),
+            KeyboardIntrefacesFilter::vulcan_120(),
+        ],
     )
     .unwrap();
-    let buffer = ColorBuffer::new(ColorRgb::new(0, 255, 255));
+    let buffer = ColorBuffer::from_element(ColorRgb::new(0, 255, 255));
     keyboard.render(&buffer).unwrap();
     sleep(Duration::from_secs(1));
 }
 
 /// test the definitions of key can be sent in packets
-#[test]
-#[allow(clippy::missing_const_for_fn)]
-fn test_led_buffer_length() {
-    assert_eq!(
-        constants::NUMBER_KEY_LED_BUFFER % constants::KEY_PACKET_SIZE,
-        0
-    );
-}
 
 /// test the firt u8 of the color buffer
 #[test]
 fn test_color_buffer() {
-    let buffer = ColorBuffer::<ColorRgb>::new(ColorRgb::new(255, 255, 255));
+    let buffer = ColorBuffer::<ColorRgb>::from_element(ColorRgb::new(255, 255, 255));
     let raw = buffer.get_led_buffer();
-    let bite_to_write = constants::BITE_PACKET_SIZE + 1;
+    let bite_to_write = color::BITE_PACKET_SIZE + 1;
     for i in 0..(raw.len() / bite_to_write) {
         assert_eq!(raw[i * bite_to_write], 0);
     }
 }
 
 #[test]
+#[cfg(not(feature = "no-keyboard-test"))]
 fn test_time() {
     let api = MUTEX_API_TEST.lock().unwrap();
     let now = Instant::now();

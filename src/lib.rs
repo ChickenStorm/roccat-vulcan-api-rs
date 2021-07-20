@@ -14,17 +14,21 @@
 //!
 //! # Examples
 //! To load and initialized a keyboard use
-//! ```no_run
-//! use roccat_vulcan_api_rs::{KeyboardApi, config, ColorBuffer, ColorRgb};
+//! ```
+//! # //TODO
+//! use roccat_vulcan_api_rs::{KeyboardApi, ColorBuffer, ColorRgb, ErrorRoccatVulcanApi};
 //! use std::{
 //!     thread::sleep,
 //!     time::Duration,
 //! };
 //!
-//! let keyboard = KeyboardApi::get_api().unwrap();
-//! let buffer = ColorBuffer::new(ColorRgb::new(255, 255, 255));
+//! # fn main() -> Result<(), ErrorRoccatVulcanApi> {
+//! let keyboard = KeyboardApi::new()?;
+//! let buffer = ColorBuffer::from_element(ColorRgb::new(255, 255, 255));
 //! keyboard.render(&buffer).unwrap();
 //! sleep(Duration::from_secs(1));
+//! # Ok(())
+//! # }
 //! ```
 
 //#![warn(clippy::as_conversions)]
@@ -53,23 +57,24 @@
 #![warn(clippy::unseparated_literal_suffix)]
 #![warn(clippy::unused_self)]
 #![warn(clippy::unnecessary_wraps)]
-//#![warn(clippy::missing_errors_doc)]
-//#![warn(missing_docs)]
+#![warn(clippy::missing_errors_doc)]
+#![warn(missing_docs)]
 #![forbid(unsafe_code)]
-#![doc(html_root_url = "https://docs.rs/roccat-vulcan-api-rs/0.1.1")]
+#![doc(html_root_url = "https://docs.rs/roccat-vulcan-api-rs/0.2.0")]
+#![warn(clippy::all)]
 
-pub use color::{Color, ColorBuffer, ColorLuminosity, ColorRgb, ColorRgba};
-pub use config::{
-    constants, get_default_interface_info, get_products_id_default, HidInterfaceFilter,
-    HidInterfaceInfo, HidInterfaceUserPageInfo, KeyboardIntrefacesInfo,
-};
-pub use keyboard::{ErrorRoccatVulcanApi, KeyboardApi};
-pub use layout::{layout_fr_ch::LayoutFrCh, Key, KeyCodePress, Keypress, Layout};
+mod color;
+mod error;
+mod interface;
+mod keyboard;
+mod layout;
+mod reports;
 
-pub mod color;
-pub mod config;
-pub mod keyboard;
-pub mod layout;
+pub use color::*;
+pub use error::*;
+pub use interface::*;
+pub use keyboard::*;
+pub use layout::*;
 
 #[cfg(test)]
 mod test;

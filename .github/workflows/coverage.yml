@@ -31,8 +31,8 @@ jobs:
         run: |
           export RUSTFLAGS="-Zinstrument-coverage"
           export RUSTDOCFLAGS="-Zinstrument-coverage -Zunstable-options --persist-doctests target/debug/doctestbins"
-          cargo +nightly build --verbose --all --features="no-keyboard-test","serde-serialize" --no-fail-fast
-          LLVM_PROFILE_FILE="roccat-vulcan-api-rs-%p-%m.profraw" cargo +nightly test --verbose --features="no-keyboard-test","serde-serialize" --all
+          cargo +nightly build --verbose --all --features="no-keyboard-test","serde-serialize"
+          LLVM_PROFILE_FILE="roccat-vulcan-api-rs-%p-%m.profraw" cargo +nightly test --no-fail-fast --verbose --features="no-keyboard-test","serde-serialize" --all
 
       - name: parse code coverage
         run: ./grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o lcov.info
