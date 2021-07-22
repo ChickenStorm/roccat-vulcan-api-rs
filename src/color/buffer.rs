@@ -1,9 +1,9 @@
 //! module for the color buffer
 
 use crate::{color::ColorRgb, reports};
+//#[cfg(feature = "serde-serialize")]
+//use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::iter::FusedIterator;
-// #[cfg(feature = "serde-serialize")]
-// use serde::{Deserialize, Serialize};
 
 /// Size of the [`ColorBuffer`].
 pub const NUMBER_KEY_LED_BUFFER: usize = 144;
@@ -27,15 +27,31 @@ const fn get_packeted_index_from_raw(index: usize, packet_size: usize) -> usize 
 }
 
 /// Encode the set of color for [`crate::KeyboardApi::render`].
-/// TODO more doc
+///
+// TODO more doc
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
 // TODO serd
-//#[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
+// #[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
 pub struct ColorBuffer<T> {
     buffer: [T; NUMBER_KEY_LED_BUFFER],
 }
 
+/*#[cfg(feature = "serde-serialize")]
+impl<T: Serialize + Clone> Serialize for ColorBuffer<T> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let vec: Vec<_> = self.buffer.clone().into();
+        vec.serialize(serializer)
+    }
+}*/
+
 impl<T> ColorBuffer<T> {
+    const fn from_array(buffer: [T; NUMBER_KEY_LED_BUFFER]) -> Self {
+        Self { buffer }
+    }
+
     /// Get the buffer as an array
     pub const fn buffer(&self) -> &[T; NUMBER_KEY_LED_BUFFER] {
         &self.buffer
@@ -61,6 +77,25 @@ impl<T> ColorBuffer<T> {
         self.buffer.iter_mut()
     }
 }
+
+impl<'a, T> IntoIterator for &'a ColorBuffer<T> {
+    type Item = &'a T;
+    type IntoIter = <&'a [T; NUMBER_KEY_LED_BUFFER] as IntoIterator>::IntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.buffer().iter()
+    }
+}
+
+impl<'a, T> IntoIterator for &'a mut ColorBuffer<T> {
+    type Item = &'a mut T;
+    type IntoIter = <&'a mut [T; NUMBER_KEY_LED_BUFFER] as IntoIterator>::IntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.buffer_mut().iter_mut()
+    }
+}
+
 //TODO genericité ?
 impl<C: Into<ColorRgb> + Clone> ColorBuffer<C> {
     /// Get an array of u8 that is ready to be send to the led device
@@ -111,6 +146,18 @@ impl<T: Copy + Default> ColorBuffer<T> {
 impl<T: Default + Copy> Default for ColorBuffer<T> {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl<T> From<[T; NUMBER_KEY_LED_BUFFER]> for ColorBuffer<T> {
+    fn from(array: [T; NUMBER_KEY_LED_BUFFER]) -> Self {
+        Self::from_array(array)
+    }
+}
+
+impl<T> From<ColorBuffer<T>> for [T; NUMBER_KEY_LED_BUFFER] {
+    fn from(c_buffer: ColorBuffer<T>) -> Self {
+        c_buffer.buffer
     }
 }
 

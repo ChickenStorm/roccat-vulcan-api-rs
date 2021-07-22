@@ -1,6 +1,8 @@
+//! Caintains base color structure
+//! Specifically [`ColorRgb`] and [`ColorRgba`]
+
 #[cfg(feature = "serde-serialize")]
 use serde::{Deserialize, Serialize};
-/// Caintains base color structure
 use std::fmt::{Binary, Display, Formatter, LowerHex, Octal, UpperHex};
 
 /// RGB color representation

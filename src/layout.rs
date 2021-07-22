@@ -10,6 +10,9 @@ pub use keypress::*;
 mod key_name;
 pub use key_name::*;
 
+mod position;
+pub use position::*;
+
 /// Code for key light. This represent the key position in the buffer
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 #[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
@@ -35,20 +38,27 @@ impl KeyLight {
 }
 
 ///  associative data for a key.
-#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Clone, Debug, PartialEq, PartialOrd, Default)]
 pub struct KeyInfo {
     key_name: KeyName,
     key_code_light: KeyLight,
     key_code_press: KeyCode,
+    key_pos: Position,
 }
 
 impl KeyInfo {
     /// Create a new key info.
-    pub const fn new(key_code_light: KeyLight, key_code_press: KeyCode, key_name: KeyName) -> Self {
+    pub const fn new(
+        key_code_light: KeyLight,
+        key_code_press: KeyCode,
+        key_name: KeyName,
+        key_pos: Position,
+    ) -> Self {
         Self {
             key_name,
             key_code_light,
             key_code_press,
+            key_pos,
         }
     }
 

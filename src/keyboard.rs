@@ -14,8 +14,8 @@ const WAIT_FOR_CONTROL_DURATION: Duration = Duration::from_millis(1);
 /// Max time wating for device in [`KeyboardApi::wait_for_control_device`].
 const MAX_WAIT_DURATION: Duration = Duration::from_millis(100);
 
-/// Main API
 // TODO more doc
+/// Main API
 pub struct KeyboardApi {
     /// Read device that look for key press
     read: HidDevice,
@@ -50,7 +50,7 @@ impl KeyboardApi {
 
     /// Initialize the API by seraching for a keyboard matching an ellement of a list.
     /// # Errors
-    /// see [Self::new]
+    /// see [`Self::new`]
     pub fn new_from_model_list(
         api: &HidApi,
         interfaces_info: &[KeyboardIntrefacesFilter],
@@ -181,7 +181,7 @@ impl KeyboardApi {
 
     /// read key press for a time of at least duration and return a vector of the keypress that occured for this duration.
     /// # Errors
-    /// - [`ErrorRoccatVulcanApi::InvalidInput`] the duration is not valide
+    /// - [`ErrorRoccatVulcanApi::InvalidInput`] the duration is not valide (too big)
     /// - [`ErrorRoccatVulcanApi::ReadDeviceError`] if the read device had an error
     #[allow(clippy::cast_possible_truncation)]
     pub fn read_key_press(&self, duration: Duration) -> Res<Vec<Keypress>> {
@@ -229,21 +229,19 @@ impl KeyboardApi {
 }
 
 impl Drop for KeyboardApi {
-    #[allow(unused_must_use)]
     fn drop(&mut self) {
-        self.initialise_control_device(ControlerFeatureKind::Rainbow);
+        let _ = self.initialise_control_device(ControlerFeatureKind::Rainbow);
     }
 }
 
 /// Kind of feature report
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Copy, Hash)]
 #[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
+#[non_exhaustive]
 enum ControlerFeatureKind {
     /// Default rainbow behaviour.
     Rainbow,
     /// Mode where the API can send custom configuration.
-    /// If this mode would allowed to stay after opening and closing roccar swarm,
-    /// it would look like that there is some strips changing color form blue and green.
     Custom,
 }
 

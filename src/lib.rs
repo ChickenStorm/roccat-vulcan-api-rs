@@ -15,7 +15,6 @@
 //! # Examples
 //! To load and initialized a keyboard use
 //! ```
-//! # //TODO
 //! use roccat_vulcan_api_rs::{KeyboardApi, ColorBuffer, ColorRgb, ErrorRoccatVulcanApi};
 //! use std::{
 //!     thread::sleep,
@@ -25,11 +24,21 @@
 //! # fn main() -> Result<(), ErrorRoccatVulcanApi> {
 //! let keyboard = KeyboardApi::new()?;
 //! let buffer = ColorBuffer::from_element(ColorRgb::new(255, 255, 255));
-//! keyboard.render(&buffer).unwrap();
+//! keyboard.render(&buffer)?;
 //! sleep(Duration::from_secs(1));
 //! # Ok(())
 //! # }
 //! ```
+
+// TODO
+// - doc
+// - unit test
+// - Improve key position
+// - Englobing obj (buffer and layout coordination)
+// - more color otions
+// - easier use of library
+// - multi threading
+// - API Check liste
 
 //#![warn(clippy::as_conversions)]
 #![warn(clippy::cast_sign_loss)]
@@ -62,12 +71,20 @@
 #![forbid(unsafe_code)]
 #![doc(html_root_url = "https://docs.rs/roccat-vulcan-api-rs/0.2.0")]
 #![warn(clippy::all)]
+#![warn(clippy::exhaustive_enums)]
+#![doc(test(attr(deny(warnings))))]
 
+#[doc(inline)]
 mod color;
+#[doc(inline)]
 mod error;
+#[doc(inline)]
 mod interface;
+#[doc(inline)]
 mod keyboard;
+#[doc(inline)]
 mod layout;
+#[doc(inline)]
 mod reports;
 
 pub use color::*;

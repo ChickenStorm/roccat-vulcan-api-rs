@@ -2,7 +2,6 @@
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 
-// TODO keys
 /// Liste of keys. Some key might be missing.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]

@@ -1,6 +1,7 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion, Throughput};
 use hidapi::HidApi;
 use rand::Rng;
+use roccat_vulcan_api_rs::KeyboardApi;
 
 fn criterion_benchmark(c: &mut Criterion) {
     let mut rng = rand::thread_rng();
@@ -16,6 +17,12 @@ fn criterion_benchmark(c: &mut Criterion) {
             BatchSize::SmallInput,
         )
     });
+    groupe.finish();
+
+    let mut groupe_api = c.benchmark_group("keyboard_api");
+    groupe_api.bench_function("Create api", |b| b.iter(|| KeyboardApi::new().unwrap()));
+
+    groupe_api.finish()
 }
 
 criterion_group!(benches, criterion_benchmark);
