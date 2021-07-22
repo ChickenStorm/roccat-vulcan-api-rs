@@ -1,190 +1,713 @@
-
 //! Defines the layout for Swiss French layout
 
-use super::{
-    KeyCodePress,
-    Key,
-    KeyInfo,
-    Layout,
-    KeyCodeLight,
-};
+use super::{KeyCode, KeyInfo, KeyLight, KeyName, Layout, Position};
+#[cfg(feature = "serde-serialize")]
+use serde::{Deserialize, Serialize};
 
 /// get Layout key associative
-fn get_layout_info_fr_ch() -> [KeyInfo; 107] {
+const fn get_layout_info_fr_ch() -> [KeyInfo; 107] {
     // I can not move that in a constant because of the .to_string
     // Latter I might change the key info to have a &'static str
     [
-        KeyInfo::new_from_key(3, KeyCodePress::new(10, 57), Key::CapsLock),
+        KeyInfo::new(
+            KeyLight::new(3),
+            KeyCode::new(10, 57),
+            KeyName::CapsLock,
+            Position::new(0_f64, 2_f64),
+        ),
         // note that the index for the key light i out of bound for the wheel up and down
-        KeyInfo::new_from_key(250, KeyCodePress::new(204, 1), Key::WheelUp), 
-        KeyInfo::new_from_key(251, KeyCodePress::new(204, 255), Key::WheelDown),
-        KeyInfo::new_from_key(0, KeyCodePress::new(251, 17), Key::Escape),
-        KeyInfo::new(1, KeyCodePress::new(251, 18), "§".to_string(), Key::Section),
-        KeyInfo::new_from_key(2, KeyCodePress::new(251, 20), Key::Tab),
-        KeyInfo::new_from_key(4, KeyCodePress::new(251, 22), Key::LeftShift),
-        KeyInfo::new_from_key(5, KeyCodePress::new(251, 23), Key::LeftControl),
-        KeyInfo::new(6, KeyCodePress::new(251, 19), "1".to_string(), Key::Key1),
-        KeyInfo::new_from_key(7, KeyCodePress::new(251, 26), Key::Q),
-        KeyInfo::new_from_key(8, KeyCodePress::new(251, 28), Key::A),
-        KeyInfo::new(9, KeyCodePress::new(251, 29), "<".to_string(), Key::LessThan),
-        KeyInfo::new_from_key(10, KeyCodePress::new(251, 31), Key::Super),
-
-        KeyInfo::new_from_key(11, KeyCodePress::new(251, 16), Key::F1),
-        KeyInfo::new(12, KeyCodePress::new(251, 25), "2".to_string(), Key::Key2),
-        KeyInfo::new_from_key(13, KeyCodePress::new(251, 27), Key::W),
-        KeyInfo::new_from_key(14, KeyCodePress::new(251, 37), Key::S),
-        KeyInfo::new_from_key(15, KeyCodePress::new(251, 38), Key::Y),
-        KeyInfo::new_from_key(16, KeyCodePress::new(251, 39), Key::Alt),
-        
-        KeyInfo::new_from_key(17, KeyCodePress::new(251, 24), Key::F2),
-        KeyInfo::new(18, KeyCodePress::new(251, 34), "3".to_string(), Key::Key3),
-        KeyInfo::new_from_key(19, KeyCodePress::new(251, 36), Key::E),
-        KeyInfo::new_from_key(20, KeyCodePress::new(251, 44), Key::D),
-        KeyInfo::new_from_key(21, KeyCodePress::new(251, 45), Key::X),
-        
-        KeyInfo::new_from_key(23, KeyCodePress::new(251, 33), Key::F3),
-        KeyInfo::new(24, KeyCodePress::new(251, 35), "4".to_string(), Key::Key4),
-        KeyInfo::new_from_key(25, KeyCodePress::new(251, 43), Key::R),
-        KeyInfo::new_from_key(26, KeyCodePress::new(251, 53), Key::F),
-        KeyInfo::new_from_key(27, KeyCodePress::new(251, 46), Key::C),
-        
-        KeyInfo::new_from_key(28, KeyCodePress::new(251, 32), Key::F4),
-        KeyInfo::new(29, KeyCodePress::new(251, 42), "5".to_string(), Key::Key5),
-        KeyInfo::new_from_key(30, KeyCodePress::new(251, 51), Key::T),
-        KeyInfo::new_from_key(31, KeyCodePress::new(251, 52), Key::G),
-        KeyInfo::new_from_key(32, KeyCodePress::new(251, 54), Key::V),
-        
-        KeyInfo::new(33, KeyCodePress::new(251, 41), "6".to_string(), Key::Key6),
-        KeyInfo::new_from_key(34, KeyCodePress::new(251, 59), Key::Z),
-        KeyInfo::new_from_key(35, KeyCodePress::new(251, 61), Key::H),
-        KeyInfo::new_from_key(36, KeyCodePress::new(251, 62), Key::B),
-        KeyInfo::new_from_key(37, KeyCodePress::new(251, 63), Key::Space),
-        
-        KeyInfo::new_from_key(48, KeyCodePress::new(251, 40), Key::F5),
-        KeyInfo::new(49, KeyCodePress::new(251, 49), "7".to_string(), Key::Key7),
-        KeyInfo::new_from_key(50, KeyCodePress::new(251, 60), Key::U),
-        KeyInfo::new_from_key(51, KeyCodePress::new(251, 68), Key::J),
-        KeyInfo::new_from_key(52, KeyCodePress::new(251, 71), Key::N),
-        
-        KeyInfo::new_from_key(53, KeyCodePress::new(251, 48), Key::F6),
-        KeyInfo::new(54, KeyCodePress::new(251, 66), "8".to_string(), Key::Key8),
-        KeyInfo::new_from_key(55, KeyCodePress::new(251, 67), Key::I),
-        KeyInfo::new_from_key(56, KeyCodePress::new(251, 69), Key::K),
-        KeyInfo::new_from_key(57, KeyCodePress::new(251, 70), Key::M),
-        
-        KeyInfo::new_from_key(59, KeyCodePress::new(251, 56), Key::F7),
-        KeyInfo::new(60, KeyCodePress::new(251, 65), "9".to_string(), Key::Key9),
-        KeyInfo::new_from_key(61, KeyCodePress::new(251, 76), Key::O),
-        KeyInfo::new_from_key(62, KeyCodePress::new(251, 77), Key::L),
-        KeyInfo::new(63, KeyCodePress::new(251, 78), ",".to_string(), Key::Comma),
-        
-        KeyInfo::new_from_key(65, KeyCodePress::new(251, 57), Key::F8),
-        KeyInfo::new(66, KeyCodePress::new(251, 74), "0".to_string(), Key::Key0),
-        KeyInfo::new_from_key(67, KeyCodePress::new(251, 84), Key::P),
-        KeyInfo::new(68, KeyCodePress::new(251, 85), "é".to_string(), Key::EAcute),
-        KeyInfo::new(69, KeyCodePress::new(251, 86), ".".to_string(), Key::Dot),
-        KeyInfo::new_from_key(70, KeyCodePress::new(251, 103), Key::AltGr),
-        
-        KeyInfo::new(72, KeyCodePress::new(251, 75), "'".to_string(), Key::Apostrophe),
-        KeyInfo::new(73, KeyCodePress::new(251, 91), "è".to_string(), Key::EGrave),
-        KeyInfo::new(74, KeyCodePress::new(251, 93), "à".to_string(), Key::AGrave),
-        KeyInfo::new(75, KeyCodePress::new(251, 94), "-".to_string(), Key::Dash),
-        KeyInfo::new_from_key(76, KeyCodePress::new(251, 119), Key::Function),
-        
-        KeyInfo::new_from_key(78, KeyCodePress::new(251, 64), Key::F9),
-        KeyInfo::new(79, KeyCodePress::new(251, 83), "^".to_string(), Key::Caret),
-        KeyInfo::new(80, KeyCodePress::new(251, 92), "¨".to_string(), Key::Diaeresis),
-        KeyInfo::new_from_key(82, KeyCodePress::new(251, 110), Key::RightShift),
-        KeyInfo::new_from_key(83, KeyCodePress::new(251, 127), Key::Menu),
-        
-        KeyInfo::new_from_key(84, KeyCodePress::new(251, 72), Key::F10),
-        KeyInfo::new_from_key(85, KeyCodePress::new(251, 80), Key::F11),
-        KeyInfo::new_from_key(86, KeyCodePress::new(251, 81), Key::F12),
-        KeyInfo::new_from_key(87, KeyCodePress::new(251, 73), Key::BackSpace),
-        KeyInfo::new_from_key(88, KeyCodePress::new(251, 107), Key::Enter),
-        KeyInfo::new_from_key(89, KeyCodePress::new(251, 135), Key::RightControl),
-        
-        KeyInfo::new(96, KeyCodePress::new(251, 100), "$".to_string(), Key::Dolar),
-        KeyInfo::new_from_key(99, KeyCodePress::new(251, 88), Key::PrintScreen),
-        KeyInfo::new_from_key(100, KeyCodePress::new(251, 89), Key::Insert),
-        KeyInfo::new_from_key(101, KeyCodePress::new(251, 90), Key::Delete),
-        KeyInfo::new_from_key(102, KeyCodePress::new(251, 109), Key::ArrowLeft),
-        
-        KeyInfo::new_from_key(103, KeyCodePress::new(251, 96), Key::ScrollLock),
-        KeyInfo::new_from_key(104, KeyCodePress::new(251, 97), Key::Home),
-        KeyInfo::new_from_key(105, KeyCodePress::new(251, 98), Key::End),
-        KeyInfo::new_from_key(106, KeyCodePress::new(251, 108), Key::ArrowUp),
-        KeyInfo::new_from_key(107, KeyCodePress::new(251, 117), Key::ArrowDown),
-        
-        KeyInfo::new_from_key(108, KeyCodePress::new(251, 104), Key::Break),
-        KeyInfo::new_from_key(109, KeyCodePress::new(251, 105), Key::PageUp),
-        KeyInfo::new_from_key(110, KeyCodePress::new(251, 106), Key::PageDown),
-        KeyInfo::new_from_key(111, KeyCodePress::new(251, 125), Key::ArrowRight),
-        
-        KeyInfo::new_from_key(113, KeyCodePress::new(251, 113), Key::NumLock),
-        KeyInfo::new_from_key(114, KeyCodePress::new(251, 114), Key::Num7),
-        KeyInfo::new_from_key(115, KeyCodePress::new(251, 115), Key::Num4),
-        KeyInfo::new_from_key(116, KeyCodePress::new(251, 116), Key::Num1),
-        KeyInfo::new_from_key(117, KeyCodePress::new(251, 133), Key::Num0),
-        
-        KeyInfo::new_from_key(119, KeyCodePress::new(251, 121), Key::NumDivide),
-        KeyInfo::new_from_key(120, KeyCodePress::new(251, 122), Key::Num8),
-        KeyInfo::new_from_key(121, KeyCodePress::new(251, 123), Key::Num5),
-        KeyInfo::new_from_key(122, KeyCodePress::new(251, 124), Key::Num2),
-        
-        KeyInfo::new_from_key(124, KeyCodePress::new(251, 129), Key::NumMultiply),
-        KeyInfo::new_from_key(125, KeyCodePress::new(251, 130), Key::Num9),
-        KeyInfo::new_from_key(126, KeyCodePress::new(251, 131), Key::Num6),
-        KeyInfo::new_from_key(127, KeyCodePress::new(251, 132), Key::Num3),
-        KeyInfo::new_from_key(128, KeyCodePress::new(251, 141), Key::NumDot),
-        
-        KeyInfo::new_from_key(129, KeyCodePress::new(251, 137), Key::NumMinus),
-        KeyInfo::new_from_key(130, KeyCodePress::new(251, 138), Key::NumPlus),
-        KeyInfo::new_from_key(131, KeyCodePress::new(251, 140), Key::NumEnter),
+        KeyInfo::new(
+            KeyLight::new(250),
+            KeyCode::new(204, 1),
+            KeyName::WheelUp,
+            Position::new(22_f64, 5_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(251),
+            KeyCode::new(204, 255),
+            KeyName::WheelDown,
+            Position::new(22_f64, 5_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(0),
+            KeyCode::new(251, 17),
+            KeyName::Escape,
+            Position::new(0_f64, 5_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(1),
+            KeyCode::new(251, 18),
+            KeyName::Section,
+            Position::new(0_f64, 4_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(2),
+            KeyCode::new(251, 20),
+            KeyName::Tab,
+            Position::new(0_f64, 3_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(4),
+            KeyCode::new(251, 22),
+            KeyName::LeftShift,
+            Position::new(0_f64, 1_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(5),
+            KeyCode::new(251, 23),
+            KeyName::LeftControl,
+            Position::new(0_f64, 0_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(6),
+            KeyCode::new(251, 19),
+            KeyName::Key1,
+            Position::new(1_f64, 4_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(7),
+            KeyCode::new(251, 26),
+            KeyName::Q,
+            Position::new(1_f64, 3_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(8),
+            KeyCode::new(251, 28),
+            KeyName::A,
+            Position::new(1_f64, 2_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(9),
+            KeyCode::new(251, 29),
+            KeyName::LessThan,
+            Position::new(1_f64, 1_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(10),
+            KeyCode::new(251, 31),
+            KeyName::Super,
+            Position::new(1_f64, 0_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(11),
+            KeyCode::new(251, 16),
+            KeyName::F1,
+            Position::new(2_f64, 5_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(12),
+            KeyCode::new(251, 25),
+            KeyName::Key2,
+            Position::new(2_f64, 4_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(13),
+            KeyCode::new(251, 27),
+            KeyName::W,
+            Position::new(2_f64, 3_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(14),
+            KeyCode::new(251, 37),
+            KeyName::S,
+            Position::new(2_f64, 2_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(15),
+            KeyCode::new(251, 38),
+            KeyName::Y,
+            Position::new(2_f64, 1_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(16),
+            KeyCode::new(251, 39),
+            KeyName::Alt,
+            Position::new(2_f64, 0_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(17),
+            KeyCode::new(251, 24),
+            KeyName::F2,
+            Position::new(3_f64, 5_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(18),
+            KeyCode::new(251, 34),
+            KeyName::Key3,
+            Position::new(3_f64, 4_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(19),
+            KeyCode::new(251, 36),
+            KeyName::E,
+            Position::new(3_f64, 3_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(20),
+            KeyCode::new(251, 44),
+            KeyName::D,
+            Position::new(3_f64, 2_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(21),
+            KeyCode::new(251, 45),
+            KeyName::X,
+            Position::new(3_f64, 1_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(23),
+            KeyCode::new(251, 33),
+            KeyName::F3,
+            Position::new(4_f64, 5_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(24),
+            KeyCode::new(251, 35),
+            KeyName::Key4,
+            Position::new(4_f64, 4_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(25),
+            KeyCode::new(251, 43),
+            KeyName::R,
+            Position::new(4_f64, 3_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(26),
+            KeyCode::new(251, 53),
+            KeyName::F,
+            Position::new(4_f64, 2_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(27),
+            KeyCode::new(251, 46),
+            KeyName::C,
+            Position::new(4_f64, 1_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(28),
+            KeyCode::new(251, 32),
+            KeyName::F4,
+            Position::new(5_f64, 5_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(29),
+            KeyCode::new(251, 42),
+            KeyName::Key5,
+            Position::new(5_f64, 4_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(30),
+            KeyCode::new(251, 51),
+            KeyName::T,
+            Position::new(5_f64, 3_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(31),
+            KeyCode::new(251, 52),
+            KeyName::G,
+            Position::new(5_f64, 2_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(32),
+            KeyCode::new(251, 54),
+            KeyName::V,
+            Position::new(5_f64, 1_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(33),
+            KeyCode::new(251, 41),
+            KeyName::Key6,
+            Position::new(6_f64, 4_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(34),
+            KeyCode::new(251, 59),
+            KeyName::Z,
+            Position::new(6_f64, 3_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(35),
+            KeyCode::new(251, 61),
+            KeyName::H,
+            Position::new(6_f64, 2_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(36),
+            KeyCode::new(251, 62),
+            KeyName::B,
+            Position::new(6_f64, 1_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(37),
+            KeyCode::new(251, 63),
+            KeyName::Space,
+            Position::new(6_f64, 0_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(48),
+            KeyCode::new(251, 40),
+            KeyName::F5,
+            Position::new(7_f64, 5_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(49),
+            KeyCode::new(251, 49),
+            KeyName::Key7,
+            Position::new(7_f64, 4_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(50),
+            KeyCode::new(251, 60),
+            KeyName::U,
+            Position::new(7_f64, 3_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(51),
+            KeyCode::new(251, 68),
+            KeyName::J,
+            Position::new(7_f64, 2_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(52),
+            KeyCode::new(251, 71),
+            KeyName::N,
+            Position::new(7_f64, 1_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(53),
+            KeyCode::new(251, 48),
+            KeyName::F6,
+            Position::new(8_f64, 5_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(54),
+            KeyCode::new(251, 66),
+            KeyName::Key8,
+            Position::new(8_f64, 4_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(55),
+            KeyCode::new(251, 67),
+            KeyName::I,
+            Position::new(8_f64, 3_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(56),
+            KeyCode::new(251, 69),
+            KeyName::K,
+            Position::new(8_f64, 2_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(57),
+            KeyCode::new(251, 70),
+            KeyName::M,
+            Position::new(8_f64, 1_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(59),
+            KeyCode::new(251, 56),
+            KeyName::F7,
+            Position::new(9_f64, 5_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(60),
+            KeyCode::new(251, 65),
+            KeyName::Key9,
+            Position::new(9_f64, 4_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(61),
+            KeyCode::new(251, 76),
+            KeyName::O,
+            Position::new(9_f64, 3_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(62),
+            KeyCode::new(251, 77),
+            KeyName::L,
+            Position::new(9_f64, 2_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(63),
+            KeyCode::new(251, 78),
+            KeyName::Comma,
+            Position::new(9_f64, 1_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(65),
+            KeyCode::new(251, 57),
+            KeyName::F8,
+            Position::new(10_f64, 5_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(66),
+            KeyCode::new(251, 74),
+            KeyName::Key0,
+            Position::new(10_f64, 4_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(67),
+            KeyCode::new(251, 84),
+            KeyName::P,
+            Position::new(10_f64, 3_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(68),
+            KeyCode::new(251, 85),
+            KeyName::EAcute,
+            Position::new(10_f64, 2_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(69),
+            KeyCode::new(251, 86),
+            KeyName::Dot,
+            Position::new(10_f64, 1_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(70),
+            KeyCode::new(251, 103),
+            KeyName::AltGr,
+            Position::new(10_f64, 0_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(72),
+            KeyCode::new(251, 75),
+            KeyName::Apostrophe,
+            Position::new(11_f64, 4_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(73),
+            KeyCode::new(251, 91),
+            KeyName::EGrave,
+            Position::new(11_f64, 3_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(74),
+            KeyCode::new(251, 93),
+            KeyName::AGrave,
+            Position::new(11_f64, 2_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(75),
+            KeyCode::new(251, 94),
+            KeyName::Dash,
+            Position::new(11_f64, 1_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(76),
+            KeyCode::new(251, 119),
+            KeyName::Function,
+            Position::new(11_f64, 0_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(78),
+            KeyCode::new(251, 64),
+            KeyName::F9,
+            Position::new(12_f64, 5_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(79),
+            KeyCode::new(251, 83),
+            KeyName::Caret,
+            Position::new(13_f64, 4_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(80),
+            KeyCode::new(251, 92),
+            KeyName::Diaeresis,
+            Position::new(13_f64, 3_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(82),
+            KeyCode::new(251, 110),
+            KeyName::RightShift,
+            Position::new(14_f64, 0_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(83),
+            KeyCode::new(251, 127),
+            KeyName::Menu,
+            Position::new(13_f64, 0_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(84),
+            KeyCode::new(251, 72),
+            KeyName::F10,
+            Position::new(13_f64, 5_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(85),
+            KeyCode::new(251, 80),
+            KeyName::F11,
+            Position::new(14_f64, 5_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(86),
+            KeyCode::new(251, 81),
+            KeyName::F12,
+            Position::new(15_f64, 5_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(87),
+            KeyCode::new(251, 73),
+            KeyName::BackSpace,
+            Position::new(15_f64, 4_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(88),
+            KeyCode::new(251, 107),
+            KeyName::Enter,
+            Position::new(15_f64, 2.5_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(89),
+            KeyCode::new(251, 135),
+            KeyName::RightControl,
+            Position::new(15_f64, 0_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(96),
+            KeyCode::new(251, 100),
+            KeyName::Dolar,
+            Position::new(13_f64, 2_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(99),
+            KeyCode::new(251, 88),
+            KeyName::PrintScreen,
+            Position::new(16_f64, 5_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(100),
+            KeyCode::new(251, 89),
+            KeyName::Insert,
+            Position::new(16_f64, 4_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(101),
+            KeyCode::new(251, 90),
+            KeyName::Delete,
+            Position::new(16_f64, 3_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(102),
+            KeyCode::new(251, 109),
+            KeyName::ArrowLeft,
+            Position::new(16_f64, 0_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(103),
+            KeyCode::new(251, 96),
+            KeyName::ScrollLock,
+            Position::new(17_f64, 5_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(104),
+            KeyCode::new(251, 97),
+            KeyName::Home,
+            Position::new(17_f64, 4_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(105),
+            KeyCode::new(251, 98),
+            KeyName::End,
+            Position::new(17_f64, 3_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(106),
+            KeyCode::new(251, 108),
+            KeyName::ArrowUp,
+            Position::new(17_f64, 1_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(107),
+            KeyCode::new(251, 117),
+            KeyName::ArrowDown,
+            Position::new(17_f64, 0_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(108),
+            KeyCode::new(251, 104),
+            KeyName::Break,
+            Position::new(18_f64, 5_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(109),
+            KeyCode::new(251, 105),
+            KeyName::PageUp,
+            Position::new(18_f64, 4_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(110),
+            KeyCode::new(251, 106),
+            KeyName::PageDown,
+            Position::new(18_f64, 3_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(111),
+            KeyCode::new(251, 125),
+            KeyName::ArrowRight,
+            Position::new(18_f64, 0_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(113),
+            KeyCode::new(251, 113),
+            KeyName::NumLock,
+            Position::new(19_f64, 4_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(114),
+            KeyCode::new(251, 114),
+            KeyName::Num7,
+            Position::new(19_f64, 3_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(115),
+            KeyCode::new(251, 115),
+            KeyName::Num4,
+            Position::new(19_f64, 2_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(116),
+            KeyCode::new(251, 116),
+            KeyName::Num1,
+            Position::new(19_f64, 1_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(117),
+            KeyCode::new(251, 133),
+            KeyName::Num0,
+            Position::new(19.5_f64, 0_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(119),
+            KeyCode::new(251, 121),
+            KeyName::NumDivide,
+            Position::new(20_f64, 4_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(120),
+            KeyCode::new(251, 122),
+            KeyName::Num8,
+            Position::new(20_f64, 3_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(121),
+            KeyCode::new(251, 123),
+            KeyName::Num5,
+            Position::new(20_f64, 3_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(122),
+            KeyCode::new(251, 124),
+            KeyName::Num2,
+            Position::new(20_f64, 1_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(124),
+            KeyCode::new(251, 129),
+            KeyName::NumMultiply,
+            Position::new(21_f64, 4_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(125),
+            KeyCode::new(251, 130),
+            KeyName::Num9,
+            Position::new(21_f64, 3_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(126),
+            KeyCode::new(251, 131),
+            KeyName::Num6,
+            Position::new(21_f64, 2_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(127),
+            KeyCode::new(251, 132),
+            KeyName::Num3,
+            Position::new(21_f64, 1_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(128),
+            KeyCode::new(251, 141),
+            KeyName::NumDot,
+            Position::new(21_f64, 0_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(129),
+            KeyCode::new(251, 137),
+            KeyName::NumMinus,
+            Position::new(22_f64, 4_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(130),
+            KeyCode::new(251, 138),
+            KeyName::NumPlus,
+            Position::new(22_f64, 2.5_f64),
+        ),
+        KeyInfo::new(
+            KeyLight::new(131),
+            KeyCode::new(251, 140),
+            KeyName::NumEnter,
+            Position::new(22_f64, 0.5_f64),
+        ),
     ]
 }
 
 /// Swiss French Layout
-pub struct LayoutFrCh {
-    layout_key_info : [KeyInfo; 107]
-}
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
+pub struct LayoutFrCh;
 
 impl LayoutFrCh {
-    
-    pub fn new() -> Self {
-        Self {
-            layout_key_info : get_layout_info_fr_ch()
-        }
+    /// Initialize a configuration
+    pub const fn new() -> Self {
+        Self
     }
-    
-    /// get the array of [`KeyInfo`] 
-    pub fn layout_key_info (&self) -> &[KeyInfo; 107] {
-        return &self.layout_key_info;
+
+    /// Contains the layout.
+    const LAYOUT: [KeyInfo; 107] = get_layout_info_fr_ch();
+
+    /// Get the array of [`KeyInfo`]
+    pub const fn layout_key_info() -> &'static [KeyInfo; 107] {
+        &Self::LAYOUT
+    }
+}
+
+impl Default for LayoutFrCh {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
 impl Layout for LayoutFrCh {
-    fn find_key_info_from_light(&self, key_code_light : &KeyCodeLight) -> Option<&KeyInfo> {
-        return self.layout_key_info.iter()
-            .filter(move |element| *key_code_light == *element.key_code_light())
-            .next();
+    fn layout(&self) -> &[KeyInfo] {
+        Self::layout_key_info()
     }
-    
-    fn find_key_info_from_press_code(&self, key_code_press : &KeyCodePress) -> Option<&KeyInfo> {
-        return self.layout_key_info.iter()
-            .filter(move |element| *key_code_press == *element.key_code_press())
-            .next();
-    }
-    
-    fn find_key_info_from_key(&self, key : &Key) -> Option<&KeyInfo> {
-        return self.layout_key_info.iter()
-            .filter(move |element| *key == *element.key())
-            .next();
-    }
-    
-    fn find_key_info_from_string(&self, string : &String) -> Option<&KeyInfo> {
-        return self.layout_key_info.iter()
-            .filter(move |element| *string == *element.key_string())
-            .next();
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    /// layout search function
+    #[test]
+    fn search_key_layout_ch_fr() {
+        let layout = LayoutFrCh::new();
+        for key_info in layout.layout().iter() {
+            assert_eq!(
+                layout.find_from_key_light(*key_info.key_code_light()),
+                Some(key_info)
+            );
+            assert_eq!(
+                layout.find_from_key_code(*key_info.key_code_press()),
+                Some(key_info)
+            );
+            assert_eq!(
+                layout.find_from_key_name(*key_info.key_name()),
+                Some(key_info)
+            );
+        }
     }
 }

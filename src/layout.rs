@@ -1,198 +1,119 @@
+#[cfg(feature = "serde-serialize")]
+use serde::{Deserialize, Serialize};
 
-//! Defines the layout of the keyboard and differents key infos
+mod layout_fr_ch;
+pub use layout_fr_ch::*;
 
-use std::{
-    fmt,
-    convert::{From, Into},
-    string::String,
-    cmp::{PartialOrd, PartialEq, Ord, Eq}
-};
+mod keypress;
+pub use keypress::*;
 
-pub mod layout_fr_ch;
+mod key_name;
+pub use key_name::*;
 
-/// Key press event.
-#[derive(Clone, Debug)]
-pub struct Keypress {
-    key_code: KeyCodePress,
-    is_pressed: bool,
+mod position;
+pub use position::*;
+
+/// Code for key light. This represent the key position in the buffer
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+#[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
+pub struct KeyLight {
+    code: u8,
 }
 
-impl Keypress {
-    /// read key press from buffer hid read buffer
-    pub fn new_from_buffer(buffer: &[u8; 5]) -> Self {
-        Self {
-            key_code: KeyCodePress::new(buffer[2], buffer[3]),
-            is_pressed: {
-                    match buffer[2] {
-                        10 => buffer[4] == 0, // for some reason the caps loc signal is inverted
-                        _ => buffer[4] != 0,
-                }
-            },
-        }
+impl KeyLight {
+    /// Create a new [`KeyLight`]
+    pub const fn new(n: u8) -> Self {
+        Self { code: n }
     }
-    
-    pub fn new(key_code: KeyCodePress, is_pressed: bool ) -> Self {
-        Self {
-            key_code,
-            is_pressed,
-        }
+
+    /// Get the key code.
+    pub const fn code(self) -> u8 {
+        self.code
     }
-    
-    pub fn key_code(&self) -> &KeyCodePress {
-        &self.key_code
-    }
-    
-    pub fn is_pressed(&self) -> bool {
-        self.is_pressed
+
+    /// Get the key code as mutbale.
+    pub fn code_mut(&mut self) -> &mut u8 {
+        &mut self.code
     }
 }
-
-impl Into<KeyCodePress> for Keypress {
-    fn into(self) -> KeyCodePress {
-        return self.key_code
-    }
-}
-
-/// structur of data to incode the key when a key press is read form hid device.
-#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
-pub struct KeyCodePress {
-    first_u8: u8,
-    seconde_u8: u8,
-}
-
-impl KeyCodePress {
-    pub fn new(first_u8: u8, seconde_u8: u8) -> Self{
-        Self {
-            first_u8,
-            seconde_u8,
-        }
-    }
-    
-    pub fn first_u8(&self) -> u8 {
-        return self.first_u8
-    }
-    
-    pub fn seconde_u8(&self) -> u8 {
-        return self.seconde_u8
-    }
-}
-
-impl From<[u8; 2]> for KeyCodePress {
-    fn from(array: [u8; 2] ) -> Self {
-        KeyCodePress::new(array[0], array[1])
-    }
-}
-
-impl From<(u8, u8)> for KeyCodePress {
-    fn from(tuple: (u8, u8) ) -> Self {
-        let (a, b) = tuple;
-        KeyCodePress::new(a, b)
-    }
-}
-
-impl Into<[u8; 2]> for KeyCodePress {
-    fn into(self) -> [u8; 2] {
-        [self.first_u8(), self.seconde_u8()]
-    }
-}
-
-/// Liste of keys. Some key might be missing.
-#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
-pub enum Key {
-    /// key not listed or other key
-    Unbound,
-    Escape,
-    F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,
-    PrintScreen, ScrollLock, Break, WheelUp, WheelDown,
-    /// §
-    Section, Key1, Key2, Key3, Key4, Key5, Key6, Key7, Key8, Key9, Key0,
-    /// '
-    Apostrophe, 
-    /// ^
-    Caret, BackSpace,
-    Tab, Q, W, E, R, T, Z, U, I, O, P, EGrave, 
-    /// ¨
-    Diaeresis,
-    CapsLock, A, S, D, F, G, H, J, K, L, EAcute, AGrave, Dolar, Enter,
-    LeftShift, LessThan, Y, X, C, V, B, N, M, Comma, Dot, Dash, RightShift,
-    LeftControl,
-    /// Meta left
-    Super,
-    Alt, Space, AltGr, Function,
-    /// Meta right
-    Menu,
-    RightControl,
-    Insert, Home, PageUp, PageDown, Delete, End,
-    NumLock, NumDivide, NumMultiply, NumMinus, NumPlus, NumEnter, NumDot,
-    Num1, Num2, Num3, Num4, Num5, Num6, Num7, Num8, Num9, Num0,
-    ArrowUp, ArrowDown, ArrowLeft, ArrowRight,
-}
-
-impl fmt::Display for Key {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::Debug::fmt(self, f)
-    }
-}
-
-type KeyCodeLight = u8; // might change to usize
 
 ///  associative data for a key.
-#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Clone, Debug, PartialEq, PartialOrd, Default)]
 pub struct KeyInfo {
-    key_code_light: KeyCodeLight,
-    key_code_press: KeyCodePress,
-    key: Key,
-    key_string: String,
+    key_name: KeyName,
+    key_code_light: KeyLight,
+    key_code_press: KeyCode,
+    key_pos: Position,
 }
 
 impl KeyInfo {
-    pub fn new(key_code_light: KeyCodeLight, key_code_press: KeyCodePress, key_string: String, key: Key) -> Self {
-        Self{
+    /// Create a new key info.
+    pub const fn new(
+        key_code_light: KeyLight,
+        key_code_press: KeyCode,
+        key_name: KeyName,
+        key_pos: Position,
+    ) -> Self {
+        Self {
+            key_name,
             key_code_light,
             key_code_press,
-            key_string,
-            key,
+            key_pos,
         }
     }
-    
-    /// create a key info using the `key.to_string()` for [`Key`]
-    pub fn new_from_key(key_code_light: KeyCodeLight, key_code_press: KeyCodePress, key: Key) -> Self {
-        Self{
-            key_code_light,
-            key_code_press,
-            key_string: key.to_string(),
-            key,
-        }
+
+    /// Get the key code ofr the led.
+    pub const fn key_code_light(&self) -> &KeyLight {
+        &self.key_code_light
     }
-    
-    pub fn key_code_light(&self) -> &KeyCodeLight {
-        return &self.key_code_light;
+
+    /// Get the key code for press events
+    pub const fn key_code_press(&self) -> &KeyCode {
+        &self.key_code_press
     }
-    
-    pub fn key_code_press(&self) -> &KeyCodePress {
-        return &self.key_code_press;
+
+    /// Get the key name
+    pub const fn key_name(&self) -> &KeyName {
+        &self.key_name
     }
-    
-    pub fn key_string(&self) -> &String {
-        return &self.key_string;
+
+    /// Get the key code ofr the led.
+    pub fn key_code_light_mut(&mut self) -> &mut KeyLight {
+        &mut self.key_code_light
     }
-    
-    pub fn key(&self) -> &Key {
-        return &self.key;
+
+    /// Get the key code for press events
+    pub fn key_code_press_mut(&mut self) -> &mut KeyCode {
+        &mut self.key_code_press
+    }
+
+    /// Get the key name
+    pub fn key_name_mut(&mut self) -> &mut KeyName {
+        &mut self.key_name
     }
 }
 
-impl From<(KeyCodeLight, KeyCodePress, String, Key)> for KeyInfo {
-    fn from(tuple: (KeyCodeLight, KeyCodePress, String, Key)) -> Self {
-        let (key_code_light, key_code_press, key_string, key) = tuple;
-        KeyInfo::new(key_code_light, key_code_press, key_string, key)
-    }
-}
-
-/// Information to encode a layout, get key info from differents way to encode a key.
+/// Defines a Keyboard layout
 pub trait Layout {
-    fn find_key_info_from_light (&self, key_code_light : &KeyCodeLight) -> Option<&KeyInfo>;
-    fn find_key_info_from_press_code (&self, key_code_press : &KeyCodePress) -> Option<&KeyInfo>;
-    fn find_key_info_from_key (&self, key : &Key) -> Option<&KeyInfo>;
-    fn find_key_info_from_string (&self, string : &String) -> Option<&KeyInfo>;
+    /// returns the layout
+    fn layout(&self) -> &[KeyInfo];
+
+    /// Find key info from y [`KeyName`]
+    fn find_from_key_name(&self, key_name: KeyName) -> Option<&KeyInfo> {
+        self.layout().iter().find(|info| info.key_name == key_name)
+    }
+
+    /// Find key info from a [`KeyCode`]
+    fn find_from_key_code(&self, key_code: KeyCode) -> Option<&KeyInfo> {
+        self.layout()
+            .iter()
+            .find(|info| info.key_code_press == key_code)
+    }
+
+    /// Find key info from a [`KeyLight`]
+    fn find_from_key_light(&self, key_code: KeyLight) -> Option<&KeyInfo> {
+        self.layout()
+            .iter()
+            .find(|info| info.key_code_light == key_code)
+    }
 }

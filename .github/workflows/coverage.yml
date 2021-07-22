@@ -1,0 +1,41 @@
+name: coverage
+
+env:
+  CARGO_TERM_COLOR: always
+
+on: [push]
+jobs:
+  coverage:
+    name: coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install libhidapi
+        run: sudo apt install libhidapi-dev libusb-1.0-0-dev
+
+      - name: Install Rust nightly toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+
+      - name: Install llvm-tools-preview
+        run: rustup component add llvm-tools-preview
+
+      - name: Install grcov
+        run: curl -L https://github.com/mozilla/grcov/releases/latest/download/grcov-linux-x86_64.tar.bz2 | tar jxf -
+
+      - name: Generate code coverage
+        continue-on-error: true
+        run: |
+          export RUSTFLAGS="-Zinstrument-coverage"
+          export RUSTDOCFLAGS="-Zinstrument-coverage -Zunstable-options --persist-doctests target/debug/doctestbins"
+          cargo +nightly build --verbose --all --features="no-keyboard-test","serde-serialize"
+          LLVM_PROFILE_FILE="roccat-vulcan-api-rs-%p-%m.profraw" cargo +nightly test --no-fail-fast --verbose --features="no-keyboard-test","serde-serialize" --all
+
+      - name: parse code coverage
+        run: ./grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o lcov.info
+
+      - name: Upload to codecov.io
+        run: bash <(curl -s https://codecov.io/bash) -f lcov.info
