@@ -3,6 +3,7 @@
 
 #[cfg(feature = "serde-serialize")]
 use serde::{Deserialize, Serialize};
+use std::cmp::Ordering;
 use std::fmt::{Binary, Display, Formatter, LowerHex, Octal, UpperHex};
 
 /// RGB color representation
@@ -68,6 +69,157 @@ impl ColorRgb {
     #[allow(clippy::cast_possible_truncation)]
     pub const fn from_u32(c: u32) -> Self {
         Self::new((c >> 16) as u8, (c >> 8) as u8, c as u8)
+    }
+}
+
+/// Colot saturation
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct Saturation(f64);
+
+impl Saturation {
+    /// Create a new value between 0 and 1
+    pub fn new(s: f64) -> Option<Self> {
+        if (0_f64..=1_f64).contains(&s) && !s.is_nan() {
+            Some(Self(s))
+        } else {
+            None
+        }
+    }
+
+    /// Get the value warpped
+    pub const fn value(self) -> f64 {
+        self.0
+    }
+}
+
+/// Color value (also called brigthness)
+pub type Value = Saturation;
+
+impl Eq for Saturation {}
+
+impl Ord for Saturation {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match self.partial_cmp(&other) {
+            Some(ord) => ord,
+            None => unreachable!(),
+        }
+    }
+}
+
+impl PartialOrd for Saturation {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.0.partial_cmp(&other.0)
+    }
+}
+
+impl Display for Saturation {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+/// Color hue
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct Hue(f64);
+
+impl Hue {
+    /// Create a new value between 0 and 1
+    pub fn new(s: f64) -> Option<Self> {
+        if (0_f64..=1_f64).contains(&s) && !s.is_nan() {
+            Some(Self(s))
+        } else {
+            None
+        }
+    }
+
+    /// Get the value warpped
+    pub const fn value(self) -> f64 {
+        self.0
+    }
+}
+
+impl Eq for Hue {}
+
+impl PartialOrd for Hue {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.0.partial_cmp(&other.0)
+    }
+}
+
+impl Ord for Hue {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match self.partial_cmp(&other) {
+            Some(ord) => ord,
+            None => unreachable!(),
+        }
+    }
+}
+
+impl Display for Hue {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl ColorRgb {
+    #[allow(clippy::cast_possible_truncation)]
+    #[allow(clippy::cast_sign_loss)]
+    fn add_m_and_convert(v: f64, m: f64) -> u8 {
+        ((v + m) * 255_f64).round().min(255_f64).max(0_f64) as u8
+    }
+
+    /// Create a new colow with hue, saturation and value space
+    pub fn new_hsv(hue: Hue, saturation: Saturation, value: Value) -> Self {
+        let chroma = saturation.value() * value.value();
+        let h_prime = hue.value() * 6_f64;
+        let x = chroma * (1_f64 - ((h_prime % 2_f64) - 1_f64).abs());
+
+        #[allow(clippy::cast_possible_truncation)]
+        let (r1, g1, b1) = match h_prime.ceil() as i32 {
+            0_i32 | 1_i32 => (chroma, x, 0_f64),
+            2_i32 => (x, chroma, 0_f64),
+            3_i32 => (0_f64, chroma, x),
+            4_i32 => (0_f64, x, chroma),
+            5_i32 => (x, 0_f64, chroma),
+            6_i32 => (chroma, 0_f64, x),
+            _ => (0_f64, 0_f64, 0_f64),
+        };
+
+        let m = value.value() - chroma;
+        let red = Self::add_m_and_convert(r1, m);
+        let green = Self::add_m_and_convert(g1, m);
+        let blue = Self::add_m_and_convert(b1, m);
+        Self::new(red, green, blue)
+    }
+
+    /// Get the Hue Saturation Value representation of this collor.
+    pub fn into_hsv(self) -> (Hue, Saturation, Value) {
+        let value = self.r.max(self.b).max(self.g);
+        let min = self.r.min(self.b).min(self.g);
+        let chroma = value - min;
+
+        let hue = if chroma == 0 {
+            0_f64
+        } else if value == self.r {
+            1_f64 / 6_f64 * (self.g as f64 - self.b as f64) / chroma as f64
+        } else if value == self.g {
+            1_f64 / 6_f64 * (2_f64 + (self.b as f64 - self.r as f64) / chroma as f64)
+        } else {
+            // value == b
+            1_f64 / 6_f64 * (4_f64 + (self.r as f64 - self.g as f64) / chroma as f64)
+        };
+
+        let s_v = if value == 0 {
+            0_f64
+        } else {
+            chroma as f64 / value as f64
+        };
+
+        (
+            Hue::new(hue).unwrap(),
+            Saturation::new(s_v).unwrap(),
+            Value::new(value as f64 / 255_f64).unwrap(),
+        )
     }
 }
 
@@ -288,5 +440,22 @@ mod test {
         let ca = ColorRgba::new(20, 0, 0, 128);
         assert_eq!(ca.r(), 10);
         assert_eq!(ca.b(), 0);
+    }
+
+    #[test]
+    fn hsv_color() {
+        let c = ColorRgb::new_hsv(
+            Hue::new(1_f64).unwrap(),
+            Saturation::new(1_f64).unwrap(),
+            Value::new(1_f64).unwrap(),
+        );
+        assert_eq!(c, ColorRgb::new(255, 0, 0));
+
+        let c = ColorRgb::new_hsv(
+            Hue::new(0.5_f64).unwrap(),
+            Saturation::new(1_f64).unwrap(),
+            Value::new(1_f64).unwrap(),
+        );
+        assert_eq!(c, ColorRgb::new(0, 255, 255));
     }
 }
