@@ -1,13 +1,12 @@
 //! Defines the layout for Swiss French layout
 
-use super::{KeyCode, KeyInfo, KeyLight, KeyName, Layout, Position};
 #[cfg(feature = "serde-serialize")]
 use serde::{Deserialize, Serialize};
 
-/// get Layout key associative
+use super::{KeyCode, KeyInfo, KeyLight, KeyName, Layout, Position};
+
+/// get Layout key associative array
 const fn get_layout_info_fr_ch() -> [KeyInfo; 107] {
-    // I can not move that in a constant because of the .to_string
-    // Latter I might change the key info to have a &'static str
     [
         KeyInfo::new(
             KeyLight::new(3),

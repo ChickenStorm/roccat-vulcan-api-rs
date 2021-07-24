@@ -3,7 +3,7 @@
 //! # Usage
 //!
 //! add on your dependencies of Cargo.toml
-//! `roccat-vulcan-api-rs = { version = "0.1.1", git = "https://github.com/ChickenStorm/roccat-vulcan-api-rs", branch = "main" }`.
+//! `roccat-vulcan-api-rs = { version = "0.2.0", git = "https://github.com/ChickenStorm/roccat-vulcan-api-rs", branch = "main" }`.
 //!
 //! The main way to interact with the API is through [`KeyboardApi`].
 //! Note that when the structure is dropped the keyboard will go back to the default rainbow behavior.
@@ -15,17 +15,18 @@
 //! # Examples
 //! To load and initialized a keyboard use
 //! ```
-//! use roccat_vulcan_api_rs::{KeyboardApi, ColorBuffer, ColorRgb, ErrorRoccatVulcanApi};
-//! use std::{
-//!     thread::sleep,
-//!     time::Duration,
-//! };
+//! use std::{thread::sleep, time::Duration};
+//!
+//! use roccat_vulcan_api_rs::{ColorBuffer, ColorRgb, ErrorRoccatVulcanApi, KeyboardApi};
 //!
 //! # fn main() -> Result<(), ErrorRoccatVulcanApi> {
+//! # #[cfg(not(feature = "no-keyboard-test"))]
+//! # {
 //! let keyboard = KeyboardApi::new()?;
 //! let buffer = ColorBuffer::from_element(ColorRgb::new(255, 255, 255));
 //! keyboard.render(&buffer)?;
 //! sleep(Duration::from_secs(1));
+//! # }
 //! # Ok(())
 //! # }
 //! ```
@@ -35,10 +36,10 @@
 // - unit test
 // - Improve key position
 // - Englobing obj (buffer and layout coordination)
-// - more color otions
 // - easier use of library
 // - multi threading
 // - API Check liste
+// - more color otions
 
 //#![warn(clippy::as_conversions)]
 #![warn(clippy::cast_sign_loss)]
@@ -72,7 +73,9 @@
 #![doc(html_root_url = "https://docs.rs/roccat-vulcan-api-rs/0.2.0")]
 #![warn(clippy::all)]
 #![warn(clippy::exhaustive_enums)]
-#![doc(test(attr(deny(warnings))))]
+#![warn(rustdoc::missing_crate_level_docs)]
+#![warn(clippy::missing_docs_in_private_items)]
+//#![doc(test(attr(deny(warnings))))]
 
 #[doc(inline)]
 mod color;

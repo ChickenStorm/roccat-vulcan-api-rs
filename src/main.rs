@@ -1,8 +1,9 @@
+use std::time::Duration;
+
 use roccat_vulcan_api_rs::{
     ColorBuffer, ColorRgb, ErrorRoccatVulcanApi, KeyName, KeyboardApi, Layout, LayoutFrCh,
     NUMBER_KEY_LED_BUFFER,
 };
-use std::time::Duration;
 
 fn main() -> Result<(), ErrorRoccatVulcanApi> {
     //let api = hidapi::HidApi::new().unwrap();

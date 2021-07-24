@@ -1,17 +1,27 @@
 //! Caintains base color structure
 //! Specifically [`ColorRgb`] and [`ColorRgba`]
 
-#[cfg(feature = "serde-serialize")]
-use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::fmt::{Binary, Display, Formatter, LowerHex, Octal, UpperHex};
 
+#[cfg(feature = "serde-serialize")]
+use serde::{Deserialize, Serialize};
+
 /// RGB color representation
+/// # Example
+/// ```
+/// use roccat_vulcan_api_rs::{ColorBuffer, ColorRgb};
+///
+/// let _buffer = ColorBuffer::from_element(ColorRgb::new(255, 255, 255));
+/// ```
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Copy, Hash, Default)]
 #[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
 pub struct ColorRgb {
+    /// Red
     r: u8,
+    /// Green
     g: u8,
+    /// Blue
     b: u8,
 }
 
@@ -22,6 +32,13 @@ impl ColorRgb {
     }
 
     /// create [`ColorRgb`] form `[R, G, B]`
+    /// # Example
+    /// ```
+    /// use roccat_vulcan_api_rs::ColorRgb;
+    ///
+    /// let array = [255, 0, 0];
+    /// assert_eq!(ColorRgb::new_from_array(array), ColorRgb::new(255, 0, 0));
+    /// ```
     pub const fn new_from_array(array: [u8; 3]) -> Self {
         Self {
             r: array[0],
@@ -60,24 +77,59 @@ impl ColorRgb {
         &mut self.b
     }
 
-    /// Retrn the color as a u32
+    /// Retrn the color as a u32 encoded as `0x00_RR_GG_BB`
+    /// # Example
+    /// ```
+    /// use roccat_vulcan_api_rs::ColorRgb;
+    ///
+    /// let color = ColorRgb::new(0xFF, 0xC5, 0x09);
+    /// let number = 0x00_FF_C5_09_u32;
+    /// assert_eq!(color.into_u32(), number);
+    /// ```
     pub const fn into_u32(self) -> u32 {
         ((self.r as u32) << 16_u32) + ((self.g as u32) << 8_u32) + self.b as u32
     }
 
-    /// Create the color form a u32
+    /// Create the color form a u32.
+    /// The number is encoded as `0x**_RR_GG_BB`, where `**` are droped bites.
+    /// # Example
+    /// ```
+    /// use roccat_vulcan_api_rs::ColorRgb;
+    ///
+    /// let number = 0x00_FF_C5_09_u32;
+    /// let color = ColorRgb::from_u32(number);
+    /// assert_eq!(color, ColorRgb::new(0xFF, 0xC5, 0x09));
+    /// ```
     #[allow(clippy::cast_possible_truncation)]
     pub const fn from_u32(c: u32) -> Self {
         Self::new((c >> 16) as u8, (c >> 8) as u8, c as u8)
     }
 }
 
-/// Colot saturation
-#[derive(Debug, Default, Clone, Copy, PartialEq)]
+// TODO
+
+// pub enum ValueCreationError {
+//     TooSmall,
+//     TooBig,
+//     Nan,
+// }
+
+/// Color saturation, gauranties that the value is between 0 and 1.
+///
+/// Used by [`ColorRgb::new_hsv`].
+///
+/// # Examlpe
+/// ```
+/// use roccat_vulcan_api_rs::Saturation;
+///
+/// assert_eq!(Saturation::new(0.5_f64).unwrap().value(), 0.5_f64);
+/// assert_eq!(Saturation::new(1.5_f64), None);
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Saturation(f64);
 
 impl Saturation {
-    /// Create a new value between 0 and 1
+    /// Create a new value if `s` is between 0 and 1 both included. Otherwise return [`None`]
     pub fn new(s: f64) -> Option<Self> {
         if (0_f64..=1_f64).contains(&s) && !s.is_nan() {
             Some(Self(s))
@@ -92,7 +144,17 @@ impl Saturation {
     }
 }
 
-/// Color value (also called brigthness)
+/// Color value (also called brigthness). Gauranties that the value is between 0 and 1.
+///
+/// Used by [`ColorRgb::new_hsv`].
+///
+/// # Examlpe
+/// ```
+/// use roccat_vulcan_api_rs::Value;
+///
+/// assert_eq!(Value::new(0.5_f64).unwrap().value(), 0.5_f64);
+/// assert_eq!(Value::new(1.5_f64), None);
+/// ```
 pub type Value = Saturation;
 
 impl Eq for Saturation {}
@@ -118,18 +180,90 @@ impl Display for Saturation {
     }
 }
 
-/// Color hue
-#[derive(Debug, Default, Clone, Copy, PartialEq)]
+impl Default for Saturation {
+    fn default() -> Self {
+        match Self::new(0_f64) {
+            Some(s) => s,
+            None => unreachable!(),
+        }
+    }
+}
+
+/// Color hue. Gauranties that the value is between 0 and 1.
+///
+/// Used by [`ColorRgb::new_hsv`].
+///
+/// # Examlpe
+/// ```
+/// use roccat_vulcan_api_rs::Hue;
+///
+/// assert_eq!(Hue::new(0.5_f64).unwrap().value(), 0.5_f64);
+/// assert_eq!(Hue::new(1.5_f64), None);
+/// assert_eq!(Hue::new_from_degree(180_f64), Hue::new(0.5_f64))
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Hue(f64);
 
 impl Hue {
     /// Create a new value between 0 and 1
+    /// # Example
+    /// ```
+    /// use roccat_vulcan_api_rs::Hue;
+    ///
+    /// assert_eq!(Hue::new(0.5_f64).unwrap().value(), 0.5_f64);
+    /// assert_eq!(Hue::new(1.5_f64), None);
+    /// ```
     pub fn new(s: f64) -> Option<Self> {
         if (0_f64..=1_f64).contains(&s) && !s.is_nan() {
             Some(Self(s))
         } else {
             None
         }
+    }
+
+    /// Create a hue from an angle in degree
+    /// # Examlpe
+    /// ```
+    /// use roccat_vulcan_api_rs::Hue;
+    ///
+    /// assert_eq!(Hue::new_from_degree(180_f64), Hue::new(0.5_f64))
+    /// ```
+    pub fn new_from_degree(f: f64) -> Option<Self> {
+        Self::new(f / 360_f64)
+    }
+
+    /// Create a new hue from an angle in radiant
+    /// # Example
+    /// ```
+    /// use std::f64::consts::PI;
+    ///
+    /// use roccat_vulcan_api_rs::Hue;
+    ///
+    /// assert_eq!(Hue::new_from_radiant(PI), Hue::new(0.5_f64))
+    /// ```
+    pub fn new_from_radiant(f: f64) -> Option<Self> {
+        Self::new(f / (2_f64 * std::f64::consts::PI))
+    }
+
+    /// Get the hue in degree
+    /// # Example
+    /// ```
+    /// use roccat_vulcan_api_rs::Hue;
+    ///
+    /// let hue = Hue::new(0.5_f64).unwrap();
+    /// assert_eq!(hue.degree(), 180_f64);
+    /// let hue = Hue::new(0_f64).unwrap();
+    /// assert_eq!(hue.degree(), 0_f64);
+    /// let hue = Hue::new(0.25_f64).unwrap();
+    /// assert_eq!(hue.degree(), 90_f64);
+    /// ```
+    pub fn degree(self) -> f64 {
+        self.value() * 360_f64
+    }
+
+    /// Get the hue in radiant
+    pub fn radiant(self) -> f64 {
+        self.value() * 2_f64 * std::f64::consts::PI
     }
 
     /// Get the value warpped
@@ -161,11 +295,23 @@ impl Display for Hue {
     }
 }
 
+impl Default for Hue {
+    /// Create a new Hue with value `0_f64`
+    fn default() -> Self {
+        match Self::new(0_f64) {
+            Some(s) => s,
+            None => unreachable!(),
+        }
+    }
+}
+
 impl ColorRgb {
+    /// Convert a value between 0 and 1 en un [u8] entre 0 et 255
     #[allow(clippy::cast_possible_truncation)]
     #[allow(clippy::cast_sign_loss)]
-    fn add_m_and_convert(v: f64, m: f64) -> u8 {
-        ((v + m) * 255_f64).round().min(255_f64).max(0_f64) as u8
+    fn convert_to_u8(v: f64) -> u8 {
+        // the cast is safe
+        (v * 255_f64).round().min(255_f64).max(0_f64) as u8
     }
 
     /// Create a new colow with hue, saturation and value space
@@ -186,13 +332,13 @@ impl ColorRgb {
         };
 
         let m = value.value() - chroma;
-        let red = Self::add_m_and_convert(r1, m);
-        let green = Self::add_m_and_convert(g1, m);
-        let blue = Self::add_m_and_convert(b1, m);
+        let red = Self::convert_to_u8(r1 + m);
+        let green = Self::convert_to_u8(g1 + m);
+        let blue = Self::convert_to_u8(b1 + m);
         Self::new(red, green, blue)
     }
 
-    /// Get the Hue Saturation Value representation of this collor.
+    /// Get the Hue Saturation Value representation of this color.
     pub fn into_hsv(self) -> (Hue, Saturation, Value) {
         let value = self.r.max(self.b).max(self.g);
         let min = self.r.min(self.b).min(self.g);
@@ -288,7 +434,9 @@ impl Octal for ColorRgb {
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Default)]
 #[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
 pub struct ColorRgba {
+    /// base color
     color: ColorRgb,
+    /// opacity
     alpha: u8,
 }
 

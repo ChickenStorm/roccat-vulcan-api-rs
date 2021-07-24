@@ -1,9 +1,10 @@
 //! module for the color buffer
 
-use crate::{color::ColorRgb, reports};
 //#[cfg(feature = "serde-serialize")]
 //use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::iter::FusedIterator;
+
+use crate::{color::ColorRgb, reports};
 
 /// Size of the [`ColorBuffer`].
 pub const NUMBER_KEY_LED_BUFFER: usize = 144;
@@ -27,12 +28,28 @@ const fn get_packeted_index_from_raw(index: usize, packet_size: usize) -> usize 
 }
 
 /// Encode the set of color for [`crate::KeyboardApi::render`].
+/// # Example
+///```
+/// use std::{thread::sleep, time::Duration};
 ///
-// TODO more doc
+/// use roccat_vulcan_api_rs::{ColorBuffer, ColorRgb, ErrorRoccatVulcanApi, KeyboardApi};
+///
+/// # fn main() -> Result<(), ErrorRoccatVulcanApi> {
+/// # #[cfg(not(feature = "no-keyboard-test"))]
+/// # {
+/// let keyboard = KeyboardApi::new()?;
+/// let buffer = ColorBuffer::from_element(ColorRgb::new(255, 0, 255));
+/// keyboard.render(&buffer)?;
+/// sleep(Duration::from_secs(1));
+/// # }
+/// # Ok(())
+/// # }
+/// ```
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
 // TODO serd
 // #[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
 pub struct ColorBuffer<T> {
+    /// Array that contain the colors
     buffer: [T; NUMBER_KEY_LED_BUFFER],
 }
 
@@ -48,7 +65,8 @@ impl<T: Serialize + Clone> Serialize for ColorBuffer<T> {
 }*/
 
 impl<T> ColorBuffer<T> {
-    const fn from_array(buffer: [T; NUMBER_KEY_LED_BUFFER]) -> Self {
+    /// Create a buffer from an array
+    pub const fn from_array(buffer: [T; NUMBER_KEY_LED_BUFFER]) -> Self {
         Self { buffer }
     }
 
@@ -100,6 +118,7 @@ impl<'a, T> IntoIterator for &'a mut ColorBuffer<T> {
 impl<C: Into<ColorRgb> + Clone> ColorBuffer<C> {
     /// Get an array of u8 that is ready to be send to the led device
     pub fn get_led_buffer(&self) -> [u8; BUFFER_SIZE_PACKETED] {
+        /// length of the led freature report header
         const LENGTH_HEAD: usize = reports::LED_FEATURE_REPORT_HEAD.len();
         let mut buffer_return = [0x00; BUFFER_SIZE_PACKETED];
         // each packet must start with 0x00
@@ -130,9 +149,7 @@ impl<C: Into<ColorRgb> + Clone> ColorBuffer<C> {
 impl<T: Copy> ColorBuffer<T> {
     /// Create the buffer with the same color for each key
     pub fn from_element(color: T) -> Self {
-        Self {
-            buffer: [color; NUMBER_KEY_LED_BUFFER],
-        }
+        Self::from_array([color; NUMBER_KEY_LED_BUFFER])
     }
 }
 
@@ -165,6 +182,7 @@ impl<T> From<ColorBuffer<T>> for [T; NUMBER_KEY_LED_BUFFER] {
 mod test {
     use super::*;
 
+    /// test the definitions of key that can be sent in packets
     #[test]
     fn test_buffer_size() {
         assert_eq!(BUFFER_SIZE_PACKETED % (BITE_PACKET_SIZE + 1), 0);
