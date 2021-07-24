@@ -3,7 +3,7 @@
 //! # Usage
 //!
 //! add on your dependencies of Cargo.toml
-//! `roccat-vulcan-api-rs = { version = "0.2.0", git = "https://github.com/ChickenStorm/roccat-vulcan-api-rs", branch = "main" }`.
+//! `roccat-vulcan-api-rs = { version = "0.2.1", git = "https://github.com/ChickenStorm/roccat-vulcan-api-rs", branch = "main" }`.
 //!
 //! The main way to interact with the API is through [`KeyboardApi`].
 //! Note that when the structure is dropped the keyboard will go back to the default rainbow behavior.
@@ -70,7 +70,7 @@
 #![warn(clippy::missing_errors_doc)]
 #![warn(missing_docs)]
 #![forbid(unsafe_code)]
-#![doc(html_root_url = "https://docs.rs/roccat-vulcan-api-rs/0.2.0")]
+#![doc(html_root_url = "https://docs.rs/roccat-vulcan-api-rs/0.2.1")]
 #![warn(clippy::all)]
 #![warn(clippy::exhaustive_enums)]
 #![warn(rustdoc::missing_crate_level_docs)]
