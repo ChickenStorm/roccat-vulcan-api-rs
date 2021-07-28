@@ -1,3 +1,7 @@
+//! Contains the layout information
+
+use std::fmt::{Binary, Display, Formatter, LowerExp, LowerHex, Octal, UpperExp, UpperHex};
+
 #[cfg(feature = "serde-serialize")]
 use serde::{Deserialize, Serialize};
 
@@ -17,6 +21,7 @@ pub use position::*;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 #[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
 pub struct KeyLight {
+    /// Code representing the light position
     code: u8,
 }
 
@@ -37,12 +42,58 @@ impl KeyLight {
     }
 }
 
+impl Display for KeyLight {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.code())
+    }
+}
+
+impl Binary for KeyLight {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:b}", self.code())
+    }
+}
+
+impl UpperHex for KeyLight {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:X}", self.code())
+    }
+}
+
+impl LowerHex for KeyLight {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:x}", self.code())
+    }
+}
+
+impl Octal for KeyLight {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:o}", self.code())
+    }
+}
+
+impl LowerExp for KeyLight {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:e}", self.code())
+    }
+}
+
+impl UpperExp for KeyLight {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:E}", self.code())
+    }
+}
+
 ///  associative data for a key.
 #[derive(Clone, Debug, PartialEq, PartialOrd, Default)]
 pub struct KeyInfo {
+    /// Name of the key
     key_name: KeyName,
+    /// Light code of the key
     key_code_light: KeyLight,
+    /// Code of key press events
     key_code_press: KeyCode,
+    /// Position on the keyboard
     key_pos: Position,
 }
 

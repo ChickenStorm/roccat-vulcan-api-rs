@@ -1,3 +1,5 @@
+//! Contains the enum [`KeyName`]
+
 use std::fmt::{Display, Formatter};
 
 #[cfg(feature = "serde-serialize")]

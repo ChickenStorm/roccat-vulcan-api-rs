@@ -1,5 +1,7 @@
 //! Defines the layout for Swiss French layout
 
+use std::fmt::{Display, Formatter};
+
 #[cfg(feature = "serde-serialize")]
 use serde::{Deserialize, Serialize};
 
@@ -683,6 +685,13 @@ impl Default for LayoutFrCh {
 impl Layout for LayoutFrCh {
     fn layout(&self) -> &[KeyInfo] {
         Self::layout_key_info()
+    }
+}
+
+impl Display for LayoutFrCh {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        // TODO
+        write!(f, "swiss french layout")
     }
 }
 

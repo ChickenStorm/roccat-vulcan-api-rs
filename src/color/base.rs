@@ -510,7 +510,7 @@ impl ColorRgba {
         }
     }
 
-    //TODO color add sub etc...Default
+    //TODO color add sub etc...
 }
 
 impl Display for ColorRgba {

@@ -1,3 +1,6 @@
+//! main API structure
+
+use std::fmt::{Debug, Display, Formatter};
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -6,7 +9,7 @@ use hidapi::{HidApi, HidDevice};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    color, reports, ColorBuffer, ColorRgb, ErrorRoccatVulcanApi, KeyboardIntrefacesFilter, Keypress,
+    color, reports, ColorBuffer, ColorRgb, ErrorRoccatVulcanApi, KeyPress, KeyboardIntrefacesFilter,
 };
 
 /// Result returned by the API
@@ -197,11 +200,11 @@ impl KeyboardApi {
     /// # }
     /// ```
     #[allow(clippy::cast_possible_truncation)]
-    pub fn read_key_press(&self, duration: Duration) -> Res<Vec<Keypress>> {
+    pub fn read_key_press(&self, duration: Duration) -> Res<Vec<KeyPress>> {
         if duration.as_millis() > i32::MAX as u128 {
             return Err(ErrorRoccatVulcanApi::InvalidInput);
         }
-        let mut vector_result: Vec<Keypress> = Vec::new();
+        let mut vector_result = Vec::new();
         let now = Instant::now();
         loop {
             let elapsed = now.elapsed();
@@ -213,7 +216,7 @@ impl KeyboardApi {
                 .read_timeout(&mut buffer, (duration - elapsed).as_millis() as i32)
                 .map_err(ErrorRoccatVulcanApi::ReadDeviceError)?;
             if buffer[2] > 0 {
-                vector_result.push(Keypress::new_from_buffer(buffer));
+                vector_result.push(KeyPress::new_from_buffer(buffer));
             }
         }
         Ok(vector_result)
@@ -222,9 +225,15 @@ impl KeyboardApi {
     /// Block the thread until a key event or an error occur
     /// # Errors
     /// [`ErrorRoccatVulcanApi::ReadDeviceError`] when the read device has an error
-    pub fn wait_for_key_press(&self) -> Res<Keypress> {
+    pub fn wait_for_key_press(&self) -> Res<KeyPress> {
         self.listen_key_press()
             .map_err(ErrorRoccatVulcanApi::ReadDeviceError)
+    }
+
+    /// wait for a key perss and return a [`Keypress`]
+    fn listen_key_press(&self) -> Result<KeyPress, hidapi::HidError> {
+        let buffer = self.listen_key_press_raw()?;
+        Ok(KeyPress::new_from_buffer(buffer))
     }
 
     /// wait for key press and rturn the raw value
@@ -233,12 +242,6 @@ impl KeyboardApi {
         self.read.read(&mut buffer)?;
         Ok(buffer)
     }
-
-    /// wait for a key perss and return a [`Keypress`]
-    fn listen_key_press(&self) -> Result<Keypress, hidapi::HidError> {
-        let buffer = self.listen_key_press_raw()?;
-        Ok(Keypress::new_from_buffer(buffer))
-    }
 }
 
 impl Drop for KeyboardApi {
@@ -246,6 +249,20 @@ impl Drop for KeyboardApi {
         let _ = self.initialise_control_device(ControlerFeatureKind::Rainbow);
     }
 }
+
+/* impl Debug for KeyboardApi {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        // TODO
+        todo!()
+    }
+}
+
+impl Display for KeyboardApi {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        // TODO
+        todo!()
+    }
+} */
 
 /// Kind of feature report
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Copy, Hash)]
@@ -262,5 +279,14 @@ impl Default for ControlerFeatureKind {
     /// Returns [`ControlerFeatureKind::Custom`]
     fn default() -> Self {
         Self::Custom
+    }
+}
+
+impl Display for ControlerFeatureKind {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Rainbow => write!(f, "rainbow"),
+            Self::Custom => write!(f, "custom"),
+        }
     }
 }

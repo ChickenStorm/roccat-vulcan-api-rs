@@ -40,6 +40,7 @@
 // - multi threading
 // - API Check liste
 // - more color otions
+// - display / debug keyboard api by storing hdiapi::DeviceInfo
 
 //#![warn(clippy::as_conversions)]
 #![warn(clippy::cast_sign_loss)]

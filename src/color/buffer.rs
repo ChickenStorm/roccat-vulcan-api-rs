@@ -2,7 +2,10 @@
 
 //#[cfg(feature = "serde-serialize")]
 //use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::fmt::{Display, Formatter};
 use std::iter::FusedIterator;
+use std::ops::{Index, IndexMut};
+use std::slice::SliceIndex;
 
 use crate::{color::ColorRgb, reports};
 
@@ -78,6 +81,16 @@ impl<T> ColorBuffer<T> {
     /// Get a mutable reference to the buffer as an array
     pub fn buffer_mut(&mut self) -> &mut [T; NUMBER_KEY_LED_BUFFER] {
         &mut self.buffer
+    }
+
+    /// See [https://doc.rust-lang.org/std/primitive.slice.html#method.get](https://doc.rust-lang.org/std/primitive.slice.html#method.get)
+    pub fn get<I: SliceIndex<[T]>>(&self, index: I) -> Option<&I::Output> {
+        self.buffer.get(index)
+    }
+
+    /// See [https://doc.rust-lang.org/std/primitive.slice.html#method.get_mut](https://doc.rust-lang.org/std/primitive.slice.html#method.get_mut)
+    pub fn get_mut<I: SliceIndex<[T]>>(&mut self, index: I) -> Option<&mut I::Output> {
+        self.buffer.get_mut(index)
     }
 
     /// Returns an iterator in the colors
@@ -157,6 +170,46 @@ impl<T: Copy + Default> ColorBuffer<T> {
     /// Create a new buffer with default values
     pub fn new() -> Self {
         Self::from_element(T::default())
+    }
+}
+
+impl<T: Display> Display for ColorBuffer<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Buffer [")?;
+        for color in self.iter().take(NUMBER_KEY_LED_BUFFER - 1) {
+            write!(f, "{}, ", color)?;
+        }
+        write!(f, "{}]", self[NUMBER_KEY_LED_BUFFER - 1])
+    }
+}
+
+impl<T, I: SliceIndex<[T]>> Index<I> for ColorBuffer<T> {
+    type Output = I::Output;
+
+    /// # Panic
+    /// panics in the case where `index` >=  [`NUMBER_KEY_LED_BUFFER`]
+    /// ```should_panic
+    /// use roccat_vulcan_api_rs::{ColorBuffer, ColorRgb, NUMBER_KEY_LED_BUFFER};
+    ///
+    /// let color_buffer = ColorBuffer::from_element(ColorRgb::new(255, 0, 0));
+    /// let _ = color_buffer[NUMBER_KEY_LED_BUFFER];
+    /// ```
+    fn index(&self, index: I) -> &Self::Output {
+        &self.buffer[index]
+    }
+}
+
+impl<T, I: SliceIndex<[T]>> IndexMut<I> for ColorBuffer<T> {
+    /// # Panic
+    /// panics in the case where `index` >=  [`NUMBER_KEY_LED_BUFFER`]
+    /// ```should_panic
+    /// use roccat_vulcan_api_rs::{ColorBuffer, ColorRgb, NUMBER_KEY_LED_BUFFER};
+    ///
+    /// let mut color_buffer = ColorBuffer::from_element(ColorRgb::new(255, 0, 0));
+    /// color_buffer[NUMBER_KEY_LED_BUFFER] = ColorRgb::new(255, 255, 255);
+    /// ```
+    fn index_mut(&mut self, index: I) -> &mut Self::Output {
+        &mut self.buffer[index]
     }
 }
 

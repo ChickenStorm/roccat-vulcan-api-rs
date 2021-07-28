@@ -1,3 +1,5 @@
+//! Contain interfaces filters.
+
 use std::fmt::{Display, Formatter};
 
 use hidapi::DeviceInfo;
