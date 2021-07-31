@@ -1,36 +1,4 @@
-//! Provide an API to control the lighting of the Roccat Vulcan 100 and 120.
-//!
-//! # Usage
-//!
-//! add on your dependencies of Cargo.toml
-//! `roccat-vulcan-api-rs = { version = "0.2.1", git = "https://github.com/ChickenStorm/roccat-vulcan-api-rs", branch = "main" }`.
-//!
-//! The main way to interact with the API is through [`KeyboardApi`].
-//! Note that when the structure is dropped the keyboard will go back to the default rainbow behavior.
-//!
-//!
-//! # Layout
-//! For the moment only Swiss French layout is supported. To support other layout implement the trait [`Layout`].
-//!
-//! # Examples
-//! To load and initialized a keyboard use
-//! ```
-//! use std::{thread::sleep, time::Duration};
-//!
-//! use roccat_vulcan_api_rs::{ColorBuffer, ColorRgb, ErrorRoccatVulcanApi, KeyboardApi};
-//!
-//! # fn main() -> Result<(), ErrorRoccatVulcanApi> {
-//! # #[cfg(not(feature = "no-keyboard-test"))]
-//! # {
-//! let keyboard = KeyboardApi::new()?;
-//! let buffer = ColorBuffer::from_element(ColorRgb::new(255, 255, 255));
-//! keyboard.render(&buffer)?;
-//! sleep(Duration::from_secs(1));
-//! # }
-//! # Ok(())
-//! # }
-//! ```
-
+#![doc = include_str!("../README.md")]
 // TODO
 // - doc
 // - unit test
@@ -41,6 +9,7 @@
 // - API Check liste
 // - more color otions
 // - display / debug keyboard api by storing hdiapi::DeviceInfo
+// - builder
 
 //#![warn(clippy::as_conversions)]
 #![warn(clippy::cast_sign_loss)]
@@ -78,24 +47,23 @@
 #![warn(clippy::missing_docs_in_private_items)]
 //#![doc(test(attr(deny(warnings))))]
 
-#[doc(inline)]
 mod color;
-#[doc(inline)]
 mod error;
-#[doc(inline)]
 mod interface;
-#[doc(inline)]
 mod keyboard;
-#[doc(inline)]
 mod layout;
-#[doc(inline)]
 mod reports;
-
-pub use color::*;
-pub use error::*;
-pub use interface::*;
-pub use keyboard::*;
-pub use layout::*;
 
 #[cfg(test)]
 mod test;
+
+#[doc(inline)]
+pub use color::*;
+#[doc(inline)]
+pub use error::*;
+#[doc(inline)]
+pub use interface::*;
+#[doc(inline)]
+pub use keyboard::*;
+#[doc(inline)]
+pub use layout::*;

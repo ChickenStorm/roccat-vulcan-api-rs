@@ -161,7 +161,7 @@ impl Eq for Saturation {}
 
 impl Ord for Saturation {
     fn cmp(&self, other: &Self) -> Ordering {
-        match self.partial_cmp(&other) {
+        match self.partial_cmp(other) {
             Some(ord) => ord,
             None => unreachable!(),
         }
@@ -282,7 +282,7 @@ impl PartialOrd for Hue {
 
 impl Ord for Hue {
     fn cmp(&self, other: &Self) -> Ordering {
-        match self.partial_cmp(&other) {
+        match self.partial_cmp(other) {
             Some(ord) => ord,
             None => unreachable!(),
         }

@@ -85,7 +85,7 @@ impl HidInterfaceFilter {
         &mut self.usage_page
     }
 
-    /// returns wheter or not a device match the filter
+    /// returns whether or not a device match the filter
     pub fn match_filter(&self, device: &DeviceInfo) -> bool {
         let match_usage = if let Some(val) = self.usage_page() {
             val == device.usage_page()

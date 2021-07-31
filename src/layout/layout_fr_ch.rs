@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use super::{KeyCode, KeyInfo, KeyLight, KeyName, Layout, Position};
 
 /// get Layout key associative array
-const fn get_layout_info_fr_ch() -> [KeyInfo; 107] {
+const fn layout_info_fr_ch() -> [KeyInfo; 107] {
     [
         KeyInfo::new(
             KeyLight::new(3),
@@ -668,7 +668,7 @@ impl LayoutFrCh {
     }
 
     /// Contains the layout.
-    const LAYOUT: [KeyInfo; 107] = get_layout_info_fr_ch();
+    const LAYOUT: [KeyInfo; 107] = layout_info_fr_ch();
 
     /// Get the array of [`KeyInfo`]
     pub const fn layout_key_info() -> &'static [KeyInfo; 107] {
@@ -717,5 +717,67 @@ mod test {
                 Some(key_info)
             );
         }
+    }
+
+    #[test]
+    fn layout_get_gen() {
+        let layout = layout_info_fr_ch();
+        assert_eq!(layout, LayoutFrCh::LAYOUT);
+        assert_eq!(&layout, LayoutFrCh::layout_key_info());
+        assert_eq!(&layout, LayoutFrCh::default().layout());
+    }
+
+    #[test]
+    fn layout_gen_key() {
+        let layout = LayoutFrCh::default();
+        for i in 1_u8..=21_u8 {
+            assert_has_key_light(&layout, i);
+        }
+        for i in 23_u8..=37_u8 {
+            assert_has_key_light(&layout, i);
+        }
+        for i in 48_u8..=57 {
+            assert_has_key_light(&layout, i);
+        }
+        for i in 59..=63 {
+            assert_has_key_light(&layout, i);
+        }
+        for i in 65..=70 {
+            assert_has_key_light(&layout, i);
+        }
+        for i in 72..=76 {
+            assert_has_key_light(&layout, i);
+        }
+        for i in 78..=80 {
+            assert_has_key_light(&layout, i);
+        }
+        for i in 82..=89 {
+            assert_has_key_light(&layout, i);
+        }
+        assert_has_key_light(&layout, 96);
+        for i in 99..=111 {
+            assert_has_key_light(&layout, i);
+        }
+        for i in 113..=117 {
+            assert_has_key_light(&layout, i);
+        }
+        for i in 119..=122 {
+            assert_has_key_light(&layout, i);
+        }
+        for i in 124..=131 {
+            assert_has_key_light(&layout, i);
+        }
+        for i in 250..=251 {
+            assert_has_key_light(&layout, i);
+        }
+    }
+
+    fn assert_has_key_light(layout: &impl Layout, code: u8) {
+        let key_light = KeyLight::new(code);
+        assert!(
+            layout.find_from_key_light(key_light).is_some(),
+            "missing light code {}",
+            key_light
+        );
     }
 }

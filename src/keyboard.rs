@@ -75,20 +75,20 @@ impl KeyboardApi {
         }
         let read_info = api
             .device_list()
-            .find(|device| interface.read_interface().match_filter(&device))
+            .find(|device| interface.read_interface().match_filter(device))
             .ok_or(ErrorRoccatVulcanApi::NoReadDevice)?;
         let led_info = api
             .device_list()
-            .find(|device| interface.led_interface().match_filter(&device))
+            .find(|device| interface.led_interface().match_filter(device))
             .ok_or(ErrorRoccatVulcanApi::NoLedDevice)?;
         let control_info_list = api
             .device_list()
-            .filter(|device| interface.control_interface().match_filter(&device));
+            .filter(|device| interface.control_interface().match_filter(device));
 
         let control = control_info_list
             .map(|device| device.open_device(api))
             .find(|value| match value {
-                Ok(device) => Self::is_correct_control_device(&device),
+                Ok(device) => Self::is_correct_control_device(device),
                 Err(_) => false,
             })
             .ok_or(ErrorRoccatVulcanApi::NoControlDevice)?
