@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["roccat_vulcan_api_rs"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.54.0/core/ops/arith/trait.AddAssign.html\" title=\"trait core::ops::arith::AddAssign\">AddAssign</a>&lt;<a class=\"struct\" href=\"roccat_vulcan_api_rs/struct.Position.html\" title=\"struct roccat_vulcan_api_rs::Position\">Position</a>&gt; for <a class=\"struct\" href=\"roccat_vulcan_api_rs/struct.Position.html\" title=\"struct roccat_vulcan_api_rs::Position\">Position</a>","synthetic":false,"types":["roccat_vulcan_api_rs::layout::position::Position"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["roccat_vulcan_api_rs"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.54.0/core/fmt/trait.UpperExp.html\" title=\"trait core::fmt::UpperExp\">UpperExp</a> for <a class=\"struct\" href=\"roccat_vulcan_api_rs/struct.KeyLight.html\" title=\"struct roccat_vulcan_api_rs::KeyLight\">KeyLight</a>","synthetic":false,"types":["roccat_vulcan_api_rs::layout::KeyLight"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

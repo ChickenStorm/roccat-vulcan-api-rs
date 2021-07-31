@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["roccat_vulcan_api_rs"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.54.0/std/error/trait.Error.html\" title=\"trait std::error::Error\">Error</a> for <a class=\"enum\" href=\"roccat_vulcan_api_rs/enum.ErrorRoccatVulcanApi.html\" title=\"enum roccat_vulcan_api_rs::ErrorRoccatVulcanApi\">ErrorRoccatVulcanApi</a>","synthetic":false,"types":["roccat_vulcan_api_rs::error::ErrorRoccatVulcanApi"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

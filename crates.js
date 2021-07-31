@@ -1,0 +1,1 @@
+window.ALL_CRATES = ["roccat_vulcan_api_rs"];
