@@ -1,44 +1,15 @@
-//! Provide an API to control the lighting of the Roccat Vulcan 100 and 120.
-//!
-//! # Usage
-//!
-//! add on your dependencies of Cargo.toml
-//! `roccat-vulcan-api-rs = { version = "0.1.1", git = "https://github.com/ChickenStorm/roccat-vulcan-api-rs", branch = "main" }`.
-//!
-//! The main way to interact with the API is through [`KeyboardApi`].
-//! Note that when the structure is dropped the keyboard will go back to the default rainbow behavior.
-//!
-//!
-//! # Layout
-//! For the moment only Swiss French layout is supported. To support other layout implement the trait [`Layout`].
-//!
-//! # Examples
-//! To load and initialized a keyboard use
-//! ```
-//! use roccat_vulcan_api_rs::{KeyboardApi, ColorBuffer, ColorRgb, ErrorRoccatVulcanApi};
-//! use std::{
-//!     thread::sleep,
-//!     time::Duration,
-//! };
-//!
-//! # fn main() -> Result<(), ErrorRoccatVulcanApi> {
-//! let keyboard = KeyboardApi::new()?;
-//! let buffer = ColorBuffer::from_element(ColorRgb::new(255, 255, 255));
-//! keyboard.render(&buffer)?;
-//! sleep(Duration::from_secs(1));
-//! # Ok(())
-//! # }
-//! ```
-
+#![doc = include_str!("../README.md")]
 // TODO
 // - doc
 // - unit test
 // - Improve key position
 // - Englobing obj (buffer and layout coordination)
-// - more color otions
 // - easier use of library
 // - multi threading
 // - API Check liste
+// - more color otions
+// - display / debug keyboard api by storing hdiapi::DeviceInfo
+// - builder
 
 //#![warn(clippy::as_conversions)]
 #![warn(clippy::cast_sign_loss)]
@@ -69,29 +40,30 @@
 #![warn(clippy::missing_errors_doc)]
 #![warn(missing_docs)]
 #![forbid(unsafe_code)]
-#![doc(html_root_url = "https://docs.rs/roccat-vulcan-api-rs/0.2.0")]
+#![doc(html_root_url = "https://docs.rs/roccat-vulcan-api-rs/0.2.1")]
 #![warn(clippy::all)]
 #![warn(clippy::exhaustive_enums)]
-#![doc(test(attr(deny(warnings))))]
+#![warn(rustdoc::missing_crate_level_docs)]
+#![warn(clippy::missing_docs_in_private_items)]
+//#![doc(test(attr(deny(warnings))))]
 
-#[doc(inline)]
 mod color;
-#[doc(inline)]
 mod error;
-#[doc(inline)]
 mod interface;
-#[doc(inline)]
 mod keyboard;
-#[doc(inline)]
 mod layout;
-#[doc(inline)]
 mod reports;
-
-pub use color::*;
-pub use error::*;
-pub use interface::*;
-pub use keyboard::*;
-pub use layout::*;
 
 #[cfg(test)]
 mod test;
+
+#[doc(inline)]
+pub use color::*;
+#[doc(inline)]
+pub use error::*;
+#[doc(inline)]
+pub use interface::*;
+#[doc(inline)]
+pub use keyboard::*;
+#[doc(inline)]
+pub use layout::*;

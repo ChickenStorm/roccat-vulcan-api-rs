@@ -1,12 +1,16 @@
 //! test module
 
-use crate::{color, ColorBuffer, ColorRgb, KeyboardApi, KeyboardIntrefacesFilter};
-use hidapi::HidApi;
-use once_cell::sync::Lazy;
 use std::{
     sync::Mutex,
     thread::sleep,
     time::{Duration, Instant},
+};
+
+use hidapi::HidApi;
+use once_cell::sync::Lazy;
+
+use crate::{
+    color, ColorBuffer, ColorRgb, Hue, KeyboardApi, KeyboardIntrefacesFilter, Saturation, Value,
 };
 
 mod version_number;
@@ -25,20 +29,50 @@ fn test_hid_api_and_lock() {
 #[cfg(not(feature = "no-keyboard-test"))]
 fn get_keyboard() {
     let api = MUTEX_API_TEST.lock().unwrap();
-    let keyboard = KeyboardApi::new_from_model_list(
-        &api,
-        &[
-            KeyboardIntrefacesFilter::vulcan_100(),
-            KeyboardIntrefacesFilter::vulcan_120(),
-        ],
-    )
-    .unwrap();
+    let keyboard =
+        KeyboardApi::new_from_model_list(&api, &KeyboardIntrefacesFilter::DEFAULT_MODEL).unwrap();
     let buffer = ColorBuffer::from_element(ColorRgb::new(0, 255, 255));
     keyboard.render(&buffer).unwrap();
     sleep(Duration::from_secs(1));
 }
 
-/// test the definitions of key can be sent in packets
+/// Test the color send to the keyboard
+#[test]
+#[cfg(not(feature = "no-keyboard-test"))]
+fn color_cycle() {
+    const TIME_WAIT: u64 = 1_000;
+
+    let api = MUTEX_API_TEST.lock().unwrap();
+    let keyboard =
+        KeyboardApi::new_from_model_list(&api, &KeyboardIntrefacesFilter::DEFAULT_MODEL).unwrap();
+    let buffer = ColorBuffer::from_element(ColorRgb::new(255, 0, 0));
+    keyboard.render(&buffer).unwrap();
+    sleep(Duration::from_millis(TIME_WAIT));
+    let buffer = ColorBuffer::from_element(ColorRgb::new(0, 255, 0));
+    keyboard.render(&buffer).unwrap();
+    sleep(Duration::from_millis(TIME_WAIT));
+    let buffer = ColorBuffer::from_element(ColorRgb::new(0, 0, 255));
+    keyboard.render(&buffer).unwrap();
+    sleep(Duration::from_millis(TIME_WAIT));
+    let buffer = ColorBuffer::from_element(ColorRgb::new(255, 255, 255));
+    keyboard.render(&buffer).unwrap();
+    sleep(Duration::from_millis(TIME_WAIT));
+    let buffer = ColorBuffer::from_element(ColorRgb::new(0, 0, 0));
+    keyboard.render(&buffer).unwrap();
+    sleep(Duration::from_millis(TIME_WAIT));
+
+    const TOTAL_TIME_MILLI: u128 = 10_000;
+    let start = Instant::now();
+    while let Some(hue) = Hue::new(start.elapsed().as_millis() as f64 / TOTAL_TIME_MILLI as f64) {
+        let buffer = ColorBuffer::from_element(ColorRgb::new_hsv(
+            hue,
+            Saturation::new(1_f64).unwrap(),
+            Value::new(1_f64).unwrap(),
+        ));
+        keyboard.render(&buffer).unwrap();
+        sleep(Duration::from_millis(30));
+    }
+}
 
 /// test the firt u8 of the color buffer
 #[test]

@@ -1,12 +1,18 @@
-use crate::{
-    color, reports, ColorBuffer, ColorRgb, ErrorRoccatVulcanApi, KeyboardIntrefacesFilter, Keypress,
-};
-use hidapi::{HidApi, HidDevice};
-#[cfg(feature = "serde-serialize")]
-use serde::{Deserialize, Serialize};
+//! main API structure
+
+use std::fmt::{Debug, Display, Formatter};
 use std::thread;
 use std::time::{Duration, Instant};
 
+use hidapi::{HidApi, HidDevice};
+#[cfg(feature = "serde-serialize")]
+use serde::{Deserialize, Serialize};
+
+use crate::{
+    color, reports, ColorBuffer, ColorRgb, ErrorRoccatVulcanApi, KeyPress, KeyboardIntrefacesFilter,
+};
+
+/// Result returned by the API
 type Res<T> = Result<T, ErrorRoccatVulcanApi>;
 
 /// Sleep duration for [`KeyboardApi::wait_for_control_device`].
@@ -39,13 +45,7 @@ impl KeyboardApi {
     /// - [`ErrorRoccatVulcanApi::HidApiError`] Api error,
     pub fn new() -> Res<Self> {
         let api = hidapi::HidApi::new().map_err(ErrorRoccatVulcanApi::HidApiError)?;
-        Self::new_from_model_list(
-            &api,
-            &[
-                KeyboardIntrefacesFilter::vulcan_100(),
-                KeyboardIntrefacesFilter::vulcan_120(),
-            ],
-        )
+        Self::new_from_model_list(&api, &KeyboardIntrefacesFilter::DEFAULT_MODEL)
     }
 
     /// Initialize the API by seraching for a keyboard matching an ellement of a list.
@@ -75,20 +75,20 @@ impl KeyboardApi {
         }
         let read_info = api
             .device_list()
-            .find(|device| interface.read_interface().match_filter(&device))
+            .find(|device| interface.read_interface().match_filter(device))
             .ok_or(ErrorRoccatVulcanApi::NoReadDevice)?;
         let led_info = api
             .device_list()
-            .find(|device| interface.led_interface().match_filter(&device))
+            .find(|device| interface.led_interface().match_filter(device))
             .ok_or(ErrorRoccatVulcanApi::NoLedDevice)?;
         let control_info_list = api
             .device_list()
-            .filter(|device| interface.control_interface().match_filter(&device));
+            .filter(|device| interface.control_interface().match_filter(device));
 
         let control = control_info_list
             .map(|device| device.open_device(api))
             .find(|value| match value {
-                Ok(device) => Self::is_correct_control_device(&device),
+                Ok(device) => Self::is_correct_control_device(device),
                 Err(_) => false,
             })
             .ok_or(ErrorRoccatVulcanApi::NoControlDevice)?
@@ -183,12 +183,28 @@ impl KeyboardApi {
     /// # Errors
     /// - [`ErrorRoccatVulcanApi::InvalidInput`] the duration is not valide (too big)
     /// - [`ErrorRoccatVulcanApi::ReadDeviceError`] if the read device had an error
+    /// # Example
+    /// ```
+    /// use std::time::Duration;
+    ///
+    /// use roccat_vulcan_api_rs::{ErrorRoccatVulcanApi, KeyboardApi};
+    ///
+    /// # fn main() -> Result<(), ErrorRoccatVulcanApi> {
+    /// # #[cfg(not(feature = "no-keyboard-test"))]
+    /// # {
+    /// let keyboard = KeyboardApi::new()?;
+    /// let result = keyboard.read_key_press(Duration::from_millis(400))?;
+    /// println!("{:?}", result);
+    /// # }
+    /// # Ok(())
+    /// # }
+    /// ```
     #[allow(clippy::cast_possible_truncation)]
-    pub fn read_key_press(&self, duration: Duration) -> Res<Vec<Keypress>> {
+    pub fn read_key_press(&self, duration: Duration) -> Res<Vec<KeyPress>> {
         if duration.as_millis() > i32::MAX as u128 {
             return Err(ErrorRoccatVulcanApi::InvalidInput);
         }
-        let mut vector_result: Vec<Keypress> = Vec::new();
+        let mut vector_result = Vec::new();
         let now = Instant::now();
         loop {
             let elapsed = now.elapsed();
@@ -200,7 +216,7 @@ impl KeyboardApi {
                 .read_timeout(&mut buffer, (duration - elapsed).as_millis() as i32)
                 .map_err(ErrorRoccatVulcanApi::ReadDeviceError)?;
             if buffer[2] > 0 {
-                vector_result.push(Keypress::new_from_buffer(buffer));
+                vector_result.push(KeyPress::new_from_buffer(buffer));
             }
         }
         Ok(vector_result)
@@ -209,9 +225,15 @@ impl KeyboardApi {
     /// Block the thread until a key event or an error occur
     /// # Errors
     /// [`ErrorRoccatVulcanApi::ReadDeviceError`] when the read device has an error
-    pub fn wait_for_key_press(&self) -> Res<Keypress> {
+    pub fn wait_for_key_press(&self) -> Res<KeyPress> {
         self.listen_key_press()
             .map_err(ErrorRoccatVulcanApi::ReadDeviceError)
+    }
+
+    /// wait for a key perss and return a [`Keypress`]
+    fn listen_key_press(&self) -> Result<KeyPress, hidapi::HidError> {
+        let buffer = self.listen_key_press_raw()?;
+        Ok(KeyPress::new_from_buffer(buffer))
     }
 
     /// wait for key press and rturn the raw value
@@ -220,12 +242,6 @@ impl KeyboardApi {
         self.read.read(&mut buffer)?;
         Ok(buffer)
     }
-
-    /// wait for a key perss and return a [`Keypress`]
-    fn listen_key_press(&self) -> Result<Keypress, hidapi::HidError> {
-        let buffer = self.listen_key_press_raw()?;
-        Ok(Keypress::new_from_buffer(buffer))
-    }
 }
 
 impl Drop for KeyboardApi {
@@ -233,6 +249,20 @@ impl Drop for KeyboardApi {
         let _ = self.initialise_control_device(ControlerFeatureKind::Rainbow);
     }
 }
+
+/* impl Debug for KeyboardApi {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        // TODO
+        todo!()
+    }
+}
+
+impl Display for KeyboardApi {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        // TODO
+        todo!()
+    }
+} */
 
 /// Kind of feature report
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Copy, Hash)]
@@ -249,5 +279,14 @@ impl Default for ControlerFeatureKind {
     /// Returns [`ControlerFeatureKind::Custom`]
     fn default() -> Self {
         Self::Custom
+    }
+}
+
+impl Display for ControlerFeatureKind {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Rainbow => write!(f, "rainbow"),
+            Self::Custom => write!(f, "custom"),
+        }
     }
 }

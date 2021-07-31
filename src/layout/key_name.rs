@@ -1,12 +1,16 @@
+//! Contains the enum [`KeyName`]
+
+use std::fmt::{Display, Formatter};
+
 #[cfg(feature = "serde-serialize")]
 use serde::{Deserialize, Serialize};
-use std::fmt::{Display, Formatter};
 
 /// Liste of keys. Some key might be missing.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
 #[non_exhaustive]
 #[allow(missing_docs)]
+#[allow(clippy::missing_docs_in_private_items)]
 pub enum KeyName {
     /// key not listed or other key
     Unbound,

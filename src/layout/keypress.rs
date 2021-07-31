@@ -1,16 +1,22 @@
+//! Contains the struct for key event [`KeyPress`] and [`KeyCode`]
+
+use std::fmt::{Display, Formatter};
+
 #[cfg(feature = "serde-serialize")]
 use serde::{Deserialize, Serialize};
 
-/// Key press event.
+/// Key press event from the read device.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 #[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
-pub struct Keypress {
+pub struct KeyPress {
+    /// Which key recived an event
     key_code: KeyCode,
+    /// Is the key pressed or released
     is_pressed: bool,
 }
 
-impl Keypress {
-    /// read key press from buffer hid read buffer
+impl KeyPress {
+    /// read key press from buffer hid read buffer.
     pub const fn new_from_buffer(buffer: [u8; 5]) -> Self {
         Self {
             key_code: KeyCode::new(buffer[2], buffer[3]),
@@ -52,9 +58,18 @@ impl Keypress {
     }
 }
 
-impl From<Keypress> for KeyCode {
-    fn from(d: Keypress) -> Self {
+impl From<KeyPress> for KeyCode {
+    fn from(d: KeyPress) -> Self {
         d.key_code
+    }
+}
+
+impl Display for KeyPress {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self.is_pressed() {
+            true => write!(f, "key code {} being pressed", self.key_code()),
+            false => write!(f, "key code {} being release", self.key_code()),
+        }
     }
 }
 
@@ -62,7 +77,9 @@ impl From<Keypress> for KeyCode {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 #[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
 pub struct KeyCode {
+    /// first u8 representing the key code
     first_u8: u8,
+    /// Second u8 representing the key code
     seconde_u8: u8,
 }
 
@@ -112,5 +129,11 @@ impl From<(u8, u8)> for KeyCode {
 impl From<KeyCode> for [u8; 2] {
     fn from(d: KeyCode) -> Self {
         [d.first_u8(), d.seconde_u8()]
+    }
+}
+
+impl Display for KeyCode {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {})", self.first_u8(), self.seconde_u8())
     }
 }

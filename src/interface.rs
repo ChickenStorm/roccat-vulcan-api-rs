@@ -1,7 +1,10 @@
+//! Contain interfaces filters.
+
+use std::fmt::{Display, Formatter};
+
 use hidapi::DeviceInfo;
 #[cfg(feature = "serde-serialize")]
 use serde::{Deserialize, Serialize};
-use std::fmt::{Display, Formatter};
 
 /// Product is of the Vulcan 100.
 const VULCAN_100_PRODUCT_ID: u16 = 12_410;
@@ -21,8 +24,11 @@ const LED_INTERFACE_NUMBER: i32 = 3_i32;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 #[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
 pub struct HidInterfaceFilter {
+    /// Product number
     product_id: u16,
+    /// interface of communication
     interface_number: i32,
+    /// Optionally an usage page
     usage_page: Option<u16>,
 }
 
@@ -79,7 +85,7 @@ impl HidInterfaceFilter {
         &mut self.usage_page
     }
 
-    /// returns wheter or not a device match the filter
+    /// returns whether or not a device match the filter
     pub fn match_filter(&self, device: &DeviceInfo) -> bool {
         let match_usage = if let Some(val) = self.usage_page() {
             val == device.usage_page()
@@ -112,8 +118,11 @@ impl Display for HidInterfaceFilter {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
 pub struct KeyboardIntrefacesFilter {
+    /// The read device filter
     read_interface: HidInterfaceFilter,
+    /// The control device filter
     control_interface: HidInterfaceFilter,
+    /// The led device filter
     led_interface: HidInterfaceFilter,
 }
 
@@ -175,6 +184,9 @@ impl KeyboardIntrefacesFilter {
             led_interface: HidInterfaceFilter::new(product_id, LED_INTERFACE_NUMBER),
         }
     }
+
+    /// Array containg the default models.
+    pub const DEFAULT_MODEL: [Self; 2] = [Self::vulcan_100(), Self::vulcan_120()];
 }
 
 impl Display for KeyboardIntrefacesFilter {

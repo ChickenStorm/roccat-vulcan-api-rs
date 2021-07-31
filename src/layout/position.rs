@@ -3,13 +3,12 @@
 use std::fmt::{Display, Formatter};
 use std::ops::{Add, AddAssign, Neg, Sub, SubAssign};
 
-/// Size of a rectangle
-pub type Size = Position;
-
 /// Represent the position of a key
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Default)]
 pub struct Position {
+    /// X coord
     x: f64,
+    /// Y coord
     y: f64,
 }
 
@@ -96,6 +95,10 @@ impl Neg for Position {
     }
 }
 
+/* TODO Rectangle
+/// Size of a rectangle
+pub type Size = Position;
+
 /// Represent a rectangle : a key position and a size
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Default)]
 pub struct Rectangle {
@@ -114,12 +117,14 @@ impl Rectangle {
         self.size
     }
 }
+*/
 
 #[cfg(test)]
 mod test {
 
-    use super::*;
     use approx::assert_abs_diff_eq;
+
+    use super::*;
 
     /// Test [`Position`]
     #[test]
