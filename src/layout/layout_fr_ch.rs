@@ -597,7 +597,7 @@ const fn layout_info_fr_ch() -> [KeyInfo; 107] {
             KeyLight::new(121),
             KeyCode::new(251, 123),
             KeyName::Num5,
-            Position::new(20_f64, 3_f64),
+            Position::new(20_f64, 2_f64),
         ),
         KeyInfo::new(
             KeyLight::new(122),
