@@ -40,7 +40,7 @@
 #![warn(clippy::missing_errors_doc)]
 #![warn(missing_docs)]
 #![forbid(unsafe_code)]
-#![doc(html_root_url = "https://docs.rs/roccat-vulcan-api-rs/0.2.1")]
+#![doc(html_root_url = "https://docs.rs/roccat-vulcan-api-rs/0.2.2")]
 #![warn(clippy::all)]
 #![warn(clippy::exhaustive_enums)]
 #![warn(rustdoc::missing_crate_level_docs)]

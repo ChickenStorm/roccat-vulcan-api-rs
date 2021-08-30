@@ -12,6 +12,10 @@ use crate::{
     color, reports, ColorBuffer, ColorRgb, ErrorRoccatVulcanApi, KeyPress, KeyboardIntrefacesFilter,
 };
 
+mod builder;
+
+pub use builder::*;
+
 /// Result returned by the API
 type Res<T> = Result<T, ErrorRoccatVulcanApi>;
 

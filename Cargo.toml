@@ -1,6 +1,6 @@
 [package]
 name = "roccat-vulcan-api-rs"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["ChickenStorm <tetras.aigle@yahoo.fr>"]
 edition = "2018"
 readme = "README.md"
@@ -14,6 +14,9 @@ keywords  = ["roccat", "vulcan", "keyboard", "lighting", "api"]
 serde-serialize = ["serde"]
 no-keyboard-test = []
 default = ["serde-serialize"]
+
+[workspace]
+members = [ "better_swarm" ]
 
 [dependencies]
 hidapi = "1.2.5"
