@@ -21,7 +21,7 @@ type Res<T> = Result<T, ErrorRoccatVulcanApi>;
 
 /// Sleep duration for [`KeyboardApi::wait_for_control_device`].
 const WAIT_FOR_CONTROL_DURATION: Duration = Duration::from_millis(1);
-/// Max time wating for device in [`KeyboardApi::wait_for_control_device`].
+/// Max time waiting for device in [`KeyboardApi::wait_for_control_device`].
 const MAX_WAIT_DURATION: Duration = Duration::from_millis(100);
 
 // TODO more doc
@@ -45,14 +45,14 @@ impl KeyboardApi {
     /// - [`ErrorRoccatVulcanApi::ControlDeviceError`] Control device error,
     /// - [`ErrorRoccatVulcanApi::NoReadDevice`] Read device not found,
     /// - [`ErrorRoccatVulcanApi::ReadDeviceError`] Read device error,
-    /// - [`ErrorRoccatVulcanApi::WaitedToMuchTime`] Error while initalizing key board: waited for too long,
+    /// - [`ErrorRoccatVulcanApi::WaitedToMuchTime`] Error while initializing key board: waited for too long,
     /// - [`ErrorRoccatVulcanApi::HidApiError`] Api error,
     pub fn new() -> Res<Self> {
         let api = hidapi::HidApi::new().map_err(ErrorRoccatVulcanApi::HidApiError)?;
         Self::new_from_model_list(&api, &KeyboardIntrefacesFilter::DEFAULT_MODEL)
     }
 
-    /// Initialize the API by seraching for a keyboard matching an ellement of a list.
+    /// Initialize the API by searching for a keyboard matching an element of a list.
     /// # Errors
     /// see [`Self::new`]
     pub fn new_from_model_list(
@@ -67,7 +67,7 @@ impl KeyboardApi {
         Err(ErrorRoccatVulcanApi::KeyboardNotFound)
     }
 
-    /// Initialize the API uing from a interface info.
+    /// Initialize the API using from a interface info.
     /// # Errors
     /// see [`Self::new`]
     pub fn new_model(api: &HidApi, interface: &KeyboardIntrefacesFilter) -> Res<Self> {
@@ -107,7 +107,7 @@ impl KeyboardApi {
             .map_err(ErrorRoccatVulcanApi::ReadDeviceError)?;
         let keyboard = Self { read, control, led };
         keyboard.initialise_control_device(ControlerFeatureKind::Custom)?;
-        thread::sleep(WAIT_FOR_CONTROL_DURATION); // we seelp after initisation just to maje sure the fist render is done properly.
+        thread::sleep(WAIT_FOR_CONTROL_DURATION); // we sleep after initialization just to make sure the fist render is done properly.
         Ok(keyboard)
     }
 
@@ -142,13 +142,13 @@ impl KeyboardApi {
     }
 
     /// Wait for the control device to be ready.
-    /// It is unclear if the sleep is enought or the verification on the get_feature report is necessary.
+    /// It is unclear if the sleep is enough or the verification on the get_feature report is necessary.
     /// # Errors
     /// returns [`ErrorRoccatVulcanApi::WaitedToMuchTime`] if we waited too long waiting the control device.
     fn wait_for_control_device(&self) -> Res<()> {
         let now = Instant::now();
         loop {
-            // It seams to me that the sleep is requierd but the time requierd might be aribtarly small.
+            // It seams to me that the sleep is required but the time required might be arbitrary small.
             thread::sleep(WAIT_FOR_CONTROL_DURATION);
             let mut buffer: [u8; 255] = [0x00; 255];
             buffer[0] = 0x04;
@@ -165,7 +165,7 @@ impl KeyboardApi {
         Ok(())
     }
 
-    /// Renders a collor buffer
+    /// Renders a color buffer
     /// # Errors
     /// [`ErrorRoccatVulcanApi::LedDeviceError`] if the lead device encountered an error
     pub fn render(
@@ -183,9 +183,9 @@ impl KeyboardApi {
         Ok(())
     }
 
-    /// read key press for a time of at least duration and return a vector of the keypress that occured for this duration.
+    /// read key press for a time of at least duration and return a vector of the keypress that occurred for this duration.
     /// # Errors
-    /// - [`ErrorRoccatVulcanApi::InvalidInput`] the duration is not valide (too big)
+    /// - [`ErrorRoccatVulcanApi::InvalidInput`] the duration is not valid (too big)
     /// - [`ErrorRoccatVulcanApi::ReadDeviceError`] if the read device had an error
     /// # Example
     /// ```
@@ -234,13 +234,13 @@ impl KeyboardApi {
             .map_err(ErrorRoccatVulcanApi::ReadDeviceError)
     }
 
-    /// wait for a key perss and return a [`Keypress`]
+    /// wait for a key press and return a [`Keypress`]
     fn listen_key_press(&self) -> Result<KeyPress, hidapi::HidError> {
         let buffer = self.listen_key_press_raw()?;
         Ok(KeyPress::new_from_buffer(buffer))
     }
 
-    /// wait for key press and rturn the raw value
+    /// wait for key press and return the raw value
     fn listen_key_press_raw(&self) -> Result<[u8; 5], hidapi::HidError> {
         let mut buffer: [u8; 5] = [0; 5];
         self.read.read(&mut buffer)?;
@@ -273,7 +273,7 @@ impl Display for KeyboardApi {
 #[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
 #[non_exhaustive]
 enum ControlerFeatureKind {
-    /// Default rainbow behaviour.
+    /// Default rainbow behavior.
     Rainbow,
     /// Mode where the API can send custom configuration.
     Custom,

@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 #[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
 pub struct KeyPress {
-    /// Which key recived an event
+    /// Which key received an event
     key_code: KeyCode,
     /// Is the key pressed or released
     is_pressed: bool,
@@ -73,7 +73,7 @@ impl Display for KeyPress {
     }
 }
 
-/// structur of data to incode the key when a key press is read form hid device.
+/// structure of data to encode the key when a key press is read form hid device.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 #[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
 pub struct KeyCode {

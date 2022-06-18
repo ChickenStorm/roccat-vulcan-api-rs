@@ -25,7 +25,7 @@ const BUFFER_SIZE_PACKETED: usize =
         + 1)
         * (BITE_PACKET_SIZE + 1);
 
-/// get the index in the array packetet form the raw array
+/// get the index in the array packeted form the raw array
 const fn get_packeted_index_from_raw(index: usize, packet_size: usize) -> usize {
     (index + 1) + (index) / packet_size
 }
@@ -49,7 +49,7 @@ const fn get_packeted_index_from_raw(index: usize, packet_size: usize) -> usize 
 /// # }
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
-// TODO serd
+// TODO serde
 // #[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
 pub struct ColorBuffer<T> {
     /// Array that contain the colors
@@ -131,7 +131,7 @@ impl<'a, T> IntoIterator for &'a mut ColorBuffer<T> {
 impl<C: Into<ColorRgb> + Clone> ColorBuffer<C> {
     /// Get an array of u8 that is ready to be send to the led device
     pub fn get_led_buffer(&self) -> [u8; BUFFER_SIZE_PACKETED] {
-        /// length of the led freature report header
+        /// length of the led feature report header
         const LENGTH_HEAD: usize = reports::LED_FEATURE_REPORT_HEAD.len();
         let mut buffer_return = [0x00; BUFFER_SIZE_PACKETED];
         // each packet must start with 0x00
@@ -161,7 +161,7 @@ impl<C: Into<ColorRgb> + Clone> ColorBuffer<C> {
 
 impl<T: Copy> ColorBuffer<T> {
     /// Create the buffer with the same color for each key
-    pub fn from_element(color: T) -> Self {
+    pub const fn from_element(color: T) -> Self {
         Self::from_array([color; NUMBER_KEY_LED_BUFFER])
     }
 }

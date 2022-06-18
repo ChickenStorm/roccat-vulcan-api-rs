@@ -9,13 +9,13 @@ use crate::ErrorRoccatVulcanApi;
 pub struct KeyboardApiBuilder<'a> {
     /// List of filter that the api will look for
     models: Vec<KeyboardIntrefacesFilter>,
-    /// Optionaly an api can be given
+    /// Optionally an api can be given
     api: Option<&'a HidApi>,
 }
 
 //TODO examples
 impl<'a> KeyboardApiBuilder<'a> {
-    /// LIist of default KeyboardIntrefacesFilter, it is [`KeyboardIntrefacesFilter::DEFAULT_MODEL`]
+    /// List of default KeyboardIntrefacesFilter, it is [`KeyboardIntrefacesFilter::DEFAULT_MODEL`]
     const DEFAULT_MODEL: [KeyboardIntrefacesFilter; 2] = KeyboardIntrefacesFilter::DEFAULT_MODEL;
 
     /// Create a default builder
@@ -71,7 +71,7 @@ impl<'a> KeyboardApiBuilder<'a> {
         }
     }
 
-    /// Terminal methode that build the KeyboardApi.
+    /// Terminal method that build the KeyboardApi.
     /// # Errors
     /// - [`ErrorRoccatVulcanApi::HidApiError`] if the [`HidApi`] could not be initialized.None
     /// - [`ErrorRoccatVulcanApi::KeyboardNotFound`] Keyboard not found,
@@ -81,7 +81,7 @@ impl<'a> KeyboardApiBuilder<'a> {
     /// - [`ErrorRoccatVulcanApi::ControlDeviceError`] Control device error,
     /// - [`ErrorRoccatVulcanApi::NoReadDevice`] Read device not found,
     /// - [`ErrorRoccatVulcanApi::ReadDeviceError`] Read device error,
-    /// - [`ErrorRoccatVulcanApi::WaitedToMuchTime`] Error while initalizing key board: waited for too long,
+    /// - [`ErrorRoccatVulcanApi::WaitedToMuchTime`] Error while initializing key board: waited for too long,
     pub fn build(&self) -> Res<KeyboardApi> {
         match self.api {
             Some(api) => KeyboardApi::new_from_model_list(api, self.filter_list()),

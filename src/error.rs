@@ -22,11 +22,11 @@ pub enum ErrorRoccatVulcanApi {
     NoReadDevice,
     /// Read device error
     ReadDeviceError(hidapi::HidError),
-    /// Too much time elapsed while wating for the device to be ready
+    /// Too much time elapsed while waiting for the device to be ready
     WaitedToMuchTime(Duration),
     /// error while trying the get the hdiapi.
     HidApiError(hidapi::HidError),
-    /// Invalide input
+    /// Invalid input
     InvalidInput,
 }
 
@@ -46,7 +46,7 @@ impl Display for ErrorRoccatVulcanApi {
                 duration.as_secs_f64() * 1_000_f64
             ),
             Self::HidApiError(error) => write!(f, "hid api error : {}", error),
-            Self::InvalidInput => write!(f, "invalide input"),
+            Self::InvalidInput => write!(f, "invalid input"),
         }
     }
 }

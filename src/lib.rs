@@ -6,8 +6,8 @@
 // - Englobing obj (buffer and layout coordination)
 // - easier use of library
 // - multi threading
-// - API Check liste
-// - more color otions
+// - API Check list
+// - more color options
 // - display / debug keyboard api by storing hdiapi::DeviceInfo
 // - builder
 

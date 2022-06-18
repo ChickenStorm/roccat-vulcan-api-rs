@@ -10,14 +10,14 @@ use serde::{Deserialize, Serialize};
 const VULCAN_100_PRODUCT_ID: u16 = 12_410;
 /// Product is of the Vulcan 120.
 const VULCAN_120_PRODUCT_ID: u16 = 12_440;
-/// Defaut usage page for the read device.
-/// The reason the usage page is 10 is unkown and may change for diffrent device.
+/// Default usage page for the read device.
+/// The reason the usage page is 10 is unknown and may change for different device.
 const USAGE_PAGE_READ_DEVICE: u16 = 10;
-/// Defaut interface number of the read device.
+/// Default interface number of the read device.
 const READ_INTERFACE_NUMBER: i32 = 1_i32;
-/// Defaut interface number of the control device.
+/// Default interface number of the control device.
 const CONTROL_INTERFACE_NUMBER: i32 = 1_i32;
-/// Defaut interface number of the led device.
+/// Default interface number of the led device.
 const LED_INTERFACE_NUMBER: i32 = 3_i32;
 
 /// Basic HID interface filter with a product id and an interface number.
@@ -65,12 +65,12 @@ impl HidInterfaceFilter {
         &mut self.product_id
     }
 
-    /// Get the interface numer.
+    /// Get the interface number.
     pub const fn interface_number(&self) -> i32 {
         self.interface_number
     }
 
-    /// Get the interface numer as a mut reference.
+    /// Get the interface number as a mut reference.
     pub fn interface_number_mut(&mut self) -> &mut i32 {
         &mut self.interface_number
     }
@@ -114,7 +114,7 @@ impl Display for HidInterfaceFilter {
     }
 }
 
-/// liste the filter for the differents devices used by [`super::KeyboardApi`].
+/// list the filter for the different devices used by [`super::KeyboardApi`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
 pub struct KeyboardIntrefacesFilter {
@@ -185,7 +185,7 @@ impl KeyboardIntrefacesFilter {
         }
     }
 
-    /// Array containg the default models.
+    /// Array containing the default models.
     pub const DEFAULT_MODEL: [Self; 2] = [Self::vulcan_100(), Self::vulcan_120()];
 }
 

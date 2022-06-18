@@ -470,7 +470,7 @@ const fn layout_info_fr_ch() -> [KeyInfo; 107] {
         KeyInfo::new(
             KeyLight::new(96),
             KeyCode::new(251, 100),
-            KeyName::Dolar,
+            KeyName::Dollar,
             Position::new(13_f64, 2_f64),
         ),
         KeyInfo::new(

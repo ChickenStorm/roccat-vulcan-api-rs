@@ -37,7 +37,7 @@ impl KeyLight {
         self.code
     }
 
-    /// Get the key code as mutbale.
+    /// Get the key code as mutable.
     pub fn code_mut(&mut self) -> &mut u8 {
         &mut self.code
     }

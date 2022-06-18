@@ -75,7 +75,7 @@ fn color_cycle() {
     }
 }
 
-/// test the firt u8 of the color buffer
+/// test the first u8 of the color buffer
 #[test]
 fn test_color_buffer() {
     let buffer = ColorBuffer::<ColorRgb>::from_element(ColorRgb::new(255, 255, 255));

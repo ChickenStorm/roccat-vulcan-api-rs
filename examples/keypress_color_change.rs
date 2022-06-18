@@ -2,7 +2,7 @@ use roccat_vulcan_api_rs::{
     ColorBuffer, ColorRgb, ErrorRoccatVulcanApi, KeyName, KeyboardApi, Layout, LayoutFrCh,
 };
 
-/// color the keybaord with cyan and change to color of the key pressed to blue
+/// color the keyboard with cyan and change to color of the key pressed to blue
 fn main() -> Result<(), ErrorRoccatVulcanApi> {
     let keyboard = KeyboardApi::new()?;
     let mut buffer = ColorBuffer::<ColorRgb>::from_element(ColorRgb::new(0, 255, 255));

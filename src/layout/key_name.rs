@@ -5,7 +5,7 @@ use std::fmt::{Display, Formatter};
 #[cfg(feature = "serde-serialize")]
 use serde::{Deserialize, Serialize};
 
-/// Liste of keys. Some key might be missing.
+/// List of keys. Some key might be missing.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde-serialize", derive(Serialize, Deserialize))]
 #[non_exhaustive]
@@ -75,7 +75,7 @@ pub enum KeyName {
     L,
     EAcute,
     AGrave,
-    Dolar,
+    Dollar,
     Enter,
     LeftShift,
     LessThan,
@@ -137,7 +137,7 @@ impl Default for KeyName {
 }
 
 impl KeyName {
-    /// Get a secprition for the key
+    /// Get a description for the key
     #[allow(clippy::non_ascii_literal)]
     pub const fn description(self) -> &'static str {
         use KeyName::*;
@@ -157,7 +157,7 @@ impl KeyName {
             F11 => "F11",
             F12 => "F12",
             PrintScreen => "print screen",
-            ScrollLock => "scoll lock",
+            ScrollLock => "scroll lock",
             Break => "break",
             WheelUp => "wheel up",
             WheelDown => "wheel down",
@@ -200,7 +200,7 @@ impl KeyName {
             L => "L",
             EAcute => "é",
             AGrave => "à",
-            Dolar => "$",
+            Dollar => "$",
             Enter => "enter",
             LeftShift => "left shift",
             LessThan => "<",
@@ -222,7 +222,7 @@ impl KeyName {
             AltGr => "altgr",
             Function => "fn",
             Menu => "menu",
-            RightControl => "right controle",
+            RightControl => "right control",
             Insert => "insert",
             Home => "home",
             PageUp => "pageup",
