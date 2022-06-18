@@ -1,5 +1,6 @@
 //! Contains the layout information
 
+use std::cmp::Ordering;
 use std::fmt::{Binary, Display, Formatter, LowerExp, LowerHex, Octal, UpperExp, UpperHex};
 
 #[cfg(feature = "serde-serialize")]
@@ -36,7 +37,7 @@ impl KeyLight {
         self.code
     }
 
-    /// Get the key code as mutbale.
+    /// Get the key code as mutable.
     pub fn code_mut(&mut self) -> &mut u8 {
         &mut self.code
     }
@@ -142,6 +143,16 @@ impl KeyInfo {
     pub fn key_name_mut(&mut self) -> &mut KeyName {
         &mut self.key_name
     }
+
+    /// Get the position of the Key.
+    pub const fn position(&self) -> Position {
+        self.key_pos
+    }
+
+    /// Get a mutable reference to the Key's position.
+    pub fn position_mut(&mut self) -> &mut Position {
+        &mut self.key_pos
+    }
 }
 
 /// Defines a Keyboard layout
@@ -166,5 +177,14 @@ pub trait Layout {
         self.layout()
             .iter()
             .find(|info| info.key_code_light == key_code)
+    }
+
+    /// Find the key closest to the given position
+    fn find_closest(&self, position: Position) -> Option<&KeyInfo> {
+        self.layout().iter().min_by(|x, y| {
+            let d1 = (x.position() - position).length();
+            let d2 = (y.position() - position).length();
+            d1.partial_cmp(&d2).unwrap_or(Ordering::Equal)
+        })
     }
 }

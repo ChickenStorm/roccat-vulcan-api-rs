@@ -1,4 +1,4 @@
-//! Caintains base color structure
+//! Contains base color structure
 //! Specifically [`ColorRgb`] and [`ColorRgba`]
 
 use std::cmp::Ordering;
@@ -47,37 +47,37 @@ impl ColorRgb {
         }
     }
 
-    /// Get the red itensity
+    /// Get the red intensity
     pub const fn r(self) -> u8 {
         self.r
     }
 
-    /// Get the green itensity
+    /// Get the green intensity
     pub const fn g(self) -> u8 {
         self.g
     }
 
-    /// Get the blue itensity
+    /// Get the blue intensity
     pub const fn b(self) -> u8 {
         self.b
     }
 
-    /// Get the red itensity
+    /// Get the red intensity
     pub fn r_mut(&mut self) -> &mut u8 {
         &mut self.r
     }
 
-    /// Get the green itensity
+    /// Get the green intensity
     pub fn g_mut(&mut self) -> &mut u8 {
         &mut self.g
     }
 
-    /// Get the blue itensity
+    /// Get the blue intensity
     pub fn b_mut(&mut self) -> &mut u8 {
         &mut self.b
     }
 
-    /// Retrn the color as a u32 encoded as `0x00_RR_GG_BB`
+    /// Return the color as a u32 encoded as `0x00_RR_GG_BB`
     /// # Example
     /// ```
     /// use roccat_vulcan_api_rs::ColorRgb;
@@ -91,7 +91,7 @@ impl ColorRgb {
     }
 
     /// Create the color form a u32.
-    /// The number is encoded as `0x**_RR_GG_BB`, where `**` are droped bites.
+    /// The number is encoded as `0x**_RR_GG_BB`, where `**` are dropped bites.
     /// # Example
     /// ```
     /// use roccat_vulcan_api_rs::ColorRgb;
@@ -114,11 +114,11 @@ impl ColorRgb {
 //     Nan,
 // }
 
-/// Color saturation, gauranties that the value is between 0 and 1.
+/// Color saturation, guarantees that the value is between 0 and 1.
 ///
 /// Used by [`ColorRgb::new_hsv`].
 ///
-/// # Examlpe
+/// # Example
 /// ```
 /// use roccat_vulcan_api_rs::Saturation;
 ///
@@ -138,17 +138,17 @@ impl Saturation {
         }
     }
 
-    /// Get the value warpped
+    /// Get the value wrapped
     pub const fn value(self) -> f64 {
         self.0
     }
 }
 
-/// Color value (also called brigthness). Gauranties that the value is between 0 and 1.
+/// Color value (also called brightness). Gauranties that the value is between 0 and 1.
 ///
 /// Used by [`ColorRgb::new_hsv`].
 ///
-/// # Examlpe
+/// # Example
 /// ```
 /// use roccat_vulcan_api_rs::Value;
 ///
@@ -189,11 +189,11 @@ impl Default for Saturation {
     }
 }
 
-/// Color hue. Gauranties that the value is between 0 and 1.
+/// Color hue. Guarantees that the value is between 0 and 1.
 ///
 /// Used by [`ColorRgb::new_hsv`].
 ///
-/// # Examlpe
+/// # Example
 /// ```
 /// use roccat_vulcan_api_rs::Hue;
 ///
@@ -222,7 +222,7 @@ impl Hue {
     }
 
     /// Create a hue from an angle in degree
-    /// # Examlpe
+    /// # Example
     /// ```
     /// use roccat_vulcan_api_rs::Hue;
     ///
@@ -266,7 +266,7 @@ impl Hue {
         self.value() * 2_f64 * std::f64::consts::PI
     }
 
-    /// Get the value warpped
+    /// Get the value wrapped
     pub const fn value(self) -> f64 {
         self.0
     }
@@ -314,7 +314,7 @@ impl ColorRgb {
         (v * 255_f64).round().min(255_f64).max(0_f64) as u8
     }
 
-    /// Create a new colow with hue, saturation and value space
+    /// Create a new color with hue, saturation and value space
     pub fn new_hsv(hue: Hue, saturation: Saturation, value: Value) -> Self {
         let chroma = saturation.value() * value.value();
         let h_prime = hue.value() * 6_f64;
@@ -444,7 +444,7 @@ impl ColorRgba {
     #[allow(clippy::cast_possible_truncation)]
     #[allow(clippy::cast_sign_loss)]
 
-    /// Create a new RGBA color with the alpa value given by a [`f32`]
+    /// Create a new RGBA color with the alpha value given by a [`f32`]
     pub fn new_from_float(r: u8, g: u8, b: u8, f: f32) -> Self {
         Self {
             color: ColorRgb::new(r, g, b),
@@ -460,17 +460,17 @@ impl ColorRgba {
         }
     }
 
-    /// Return the transparency value (0: tranparent, 255: opaque)
+    /// Return the transparency value (0: transparent, 255: opaque)
     pub const fn alpha(self) -> u8 {
         self.alpha
     }
 
-    /// Return the row collor without the alpha
+    /// Return the row color without the alpha
     pub const fn color(self) -> ColorRgb {
         self.color
     }
 
-    /// applay the luminosity level to the value as it would be mixed with black
+    /// apply the luminosity level to the value as it would be mixed with black
     #[allow(clippy::cast_possible_truncation)]
     const fn apply_lumninosity(value: u8, lum: u8) -> u8 {
         ((value as u16 * lum as u16) / 255_u16) as u8

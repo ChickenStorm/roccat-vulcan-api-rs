@@ -1,4 +1,4 @@
-//! Conntains the constant reports
+//! Contains the constant reports
 
 /// First report for the control device
 const FEATURE_REPORT_1: [u8; 3] = [0x15, 0x00, 0x01];
